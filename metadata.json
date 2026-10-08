@@ -1,0 +1,6 @@
+{
+  "name": "Gemini Live IDE",
+  "description": "A real-time AI-powered web IDE for interactive project development, live previews, and intelligent pair-programming with Gemini.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

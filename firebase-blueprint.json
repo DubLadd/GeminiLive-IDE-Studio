@@ -1,0 +1,84 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile document",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "User email address"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User display name"
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "User profile avatar URL"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Last update timestamp"
+        }
+      },
+      "required": ["email", "createdAt"]
+    },
+    "AppProject": {
+      "title": "AppProject",
+      "description": "Saved web app / prototype in App Gallery",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner user UID"
+        },
+        "title": {
+          "type": "string",
+          "description": "App title",
+          "maxLength": 150
+        },
+        "description": {
+          "type": "string",
+          "description": "App description",
+          "maxLength": 1000
+        },
+        "htmlContent": {
+          "type": "string",
+          "description": "Full runnable HTML/JS/CSS code"
+        },
+        "category": {
+          "type": "string",
+          "description": "App category e.g. prototype, tool, game, utility"
+        },
+        "tags": {
+          "type": "array",
+          "description": "Tags list up to 10 tags"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp updated"
+        }
+      },
+      "required": ["userId", "title", "htmlContent", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile data accessible only by owner"
+    },
+    "/apps/{appId}": {
+      "schema": "AppProject",
+      "description": "Saved gallery app prototypes owned by user"
+    }
+  }
+}

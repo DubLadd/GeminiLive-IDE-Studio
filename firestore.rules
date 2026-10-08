@@ -1,0 +1,66 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default-deny global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // User profiles collection
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false; // PII isolation: prevent user scraping
+      allow create: if isOwner(userId) &&
+        isValidId(userId) &&
+        incoming().keys().hasAll(['email', 'createdAt']) &&
+        incoming().email is string &&
+        incoming().createdAt is string;
+      allow update: if isOwner(userId) &&
+        incoming().email is string;
+      allow delete: if false;
+    }
+
+    // App Gallery prototypes
+    match /apps/{appId} {
+      allow get: if isSignedIn() && (
+        existing().userId == request.auth.uid ||
+        existing().get('isPublic', false) == true
+      );
+      // Secure Query Enforcer for list queries
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() &&
+        isValidId(appId) &&
+        incoming().userId == request.auth.uid &&
+        incoming().title is string &&
+        incoming().title.size() <= 200 &&
+        incoming().htmlContent is string;
+      allow update: if isSignedIn() &&
+        isValidId(appId) &&
+        existing().userId == request.auth.uid &&
+        incoming().userId == existing().userId;
+      allow delete: if isSignedIn() &&
+        isValidId(appId) &&
+        existing().userId == request.auth.uid;
+    }
+  }
+}
