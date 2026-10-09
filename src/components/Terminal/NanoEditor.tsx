@@ -64,9 +64,7 @@ export const NanoEditor: React.FC<NanoEditorProps> = ({
 
   const handleExit = () => {
     if (isModified) {
-      if (window.confirm(`Save modified buffer (ANSWERING "No" WILL DESTROY CHANGES) ?`)) {
-        handleSave();
-      }
+      handleSave();
     }
     onExit(isModified);
   };

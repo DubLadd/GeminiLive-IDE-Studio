@@ -316,9 +316,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
                     <button
                       onClick={e => {
                         e.stopPropagation();
-                        if (confirm(`Delete file "${file.name}"?`)) {
-                          onDeleteFile(file.id);
-                        }
+                        onDeleteFile(file.id);
                       }}
                       className="p-0.5 text-slate-400 hover:text-rose-400 rounded"
                       title="Delete"

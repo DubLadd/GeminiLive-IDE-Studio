@@ -15,7 +15,8 @@ import {
   TerminalSquare,
   CheckCircle2,
   ArrowRight,
-  Code
+  Code,
+  Palette
 } from 'lucide-react';
 import { NanoEditor } from './NanoEditor';
 import {
@@ -23,6 +24,142 @@ import {
   executePythonCode,
   executeNodeCode,
 } from '../../utils/terminalExecutors';
+
+export type TerminalThemeId = 'github-dark' | 'dracula' | 'solarized-dark' | 'nord' | 'monokai' | 'cyberpunk';
+
+export interface TerminalThemeConfig {
+  id: TerminalThemeId;
+  name: string;
+  badge: string;
+  headerBg: string;
+  headerBorder: string;
+  bodyBg: string;
+  inputBg: string;
+  promptColor: string;
+  outputColor: string;
+  inputTextColor: string;
+  accentColor: string;
+  activeTabBg: string;
+  quickChipBg: string;
+  quickChipHover: string;
+  quickChipBorder: string;
+  quickChipText: string;
+}
+
+export const TERMINAL_THEMES: Record<TerminalThemeId, TerminalThemeConfig> = {
+  'github-dark': {
+    id: 'github-dark',
+    name: 'GitHub Dark',
+    badge: '#238636',
+    headerBg: 'bg-[#161b22]',
+    headerBorder: 'border-[#30363d]',
+    bodyBg: 'bg-[#0d1117]',
+    inputBg: 'bg-[#090d16]',
+    promptColor: 'text-emerald-400',
+    outputColor: 'text-slate-300',
+    inputTextColor: 'text-slate-100',
+    accentColor: '#3fb950',
+    activeTabBg: 'bg-[#21262d]',
+    quickChipBg: 'bg-[#161b22]',
+    quickChipHover: 'hover:bg-[#21262d]',
+    quickChipBorder: 'border-[#30363d]',
+    quickChipText: 'text-slate-300 hover:text-emerald-300',
+  },
+  dracula: {
+    id: 'dracula',
+    name: 'Dracula',
+    badge: '#bd93f9',
+    headerBg: 'bg-[#21222c]',
+    headerBorder: 'border-[#44475a]',
+    bodyBg: 'bg-[#282a36]',
+    inputBg: 'bg-[#1e1f29]',
+    promptColor: 'text-[#50fa7b]',
+    outputColor: 'text-[#f8f8f2]',
+    inputTextColor: 'text-[#f8f8f2]',
+    accentColor: '#bd93f9',
+    activeTabBg: 'bg-[#44475a]',
+    quickChipBg: 'bg-[#21222c]',
+    quickChipHover: 'hover:bg-[#44475a]',
+    quickChipBorder: 'border-[#6272a4]',
+    quickChipText: 'text-[#f8f8f2] hover:text-[#50fa7b]',
+  },
+  'solarized-dark': {
+    id: 'solarized-dark',
+    name: 'Solarized Dark',
+    badge: '#268bd2',
+    headerBg: 'bg-[#073642]',
+    headerBorder: 'border-[#586e75]/40',
+    bodyBg: 'bg-[#002b36]',
+    inputBg: 'bg-[#00212b]',
+    promptColor: 'text-[#859900]',
+    outputColor: 'text-[#93a1a1]',
+    inputTextColor: 'text-[#eee8d5]',
+    accentColor: '#2aa198',
+    activeTabBg: 'bg-[#073642]',
+    quickChipBg: 'bg-[#073642]',
+    quickChipHover: 'hover:bg-[#586e75]/30',
+    quickChipBorder: 'border-[#586e75]/50',
+    quickChipText: 'text-[#93a1a1] hover:text-[#2aa198]',
+  },
+  nord: {
+    id: 'nord',
+    name: 'Nord',
+    badge: '#88c0d0',
+    headerBg: 'bg-[#2e3440]',
+    headerBorder: 'border-[#4c566a]',
+    bodyBg: 'bg-[#242933]',
+    inputBg: 'bg-[#1e222a]',
+    promptColor: 'text-[#a3be8c]',
+    outputColor: 'text-[#d8dee9]',
+    inputTextColor: 'text-[#eceff4]',
+    accentColor: '#88c0d0',
+    activeTabBg: 'bg-[#434c5e]',
+    quickChipBg: 'bg-[#2e3440]',
+    quickChipHover: 'hover:bg-[#3b4252]',
+    quickChipBorder: 'border-[#4c566a]',
+    quickChipText: 'text-[#d8dee9] hover:text-[#88c0d0]',
+  },
+  monokai: {
+    id: 'monokai',
+    name: 'Monokai',
+    badge: '#a6e22e',
+    headerBg: 'bg-[#272822]',
+    headerBorder: 'border-[#3e3d32]',
+    bodyBg: 'bg-[#1e1f1c]',
+    inputBg: 'bg-[#171814]',
+    promptColor: 'text-[#a6e22e]',
+    outputColor: 'text-[#f8f8f2]',
+    inputTextColor: 'text-[#f8f8f2]',
+    accentColor: '#fd971f',
+    activeTabBg: 'bg-[#3e3d32]',
+    quickChipBg: 'bg-[#272822]',
+    quickChipHover: 'hover:bg-[#3e3d32]',
+    quickChipBorder: 'border-[#75715e]/50',
+    quickChipText: 'text-[#f8f8f2] hover:text-[#a6e22e]',
+  },
+  cyberpunk: {
+    id: 'cyberpunk',
+    name: 'Cyberpunk',
+    badge: '#ff007f',
+    headerBg: 'bg-[#1a0826]',
+    headerBorder: 'border-[#ff007f]/40',
+    bodyBg: 'bg-[#100318]',
+    inputBg: 'bg-[#0a0010]',
+    promptColor: 'text-[#00ffff]',
+    outputColor: 'text-[#ff79c6]',
+    inputTextColor: 'text-[#f8f8f2]',
+    accentColor: '#00ffff',
+    activeTabBg: 'bg-[#ff007f]/20',
+    quickChipBg: 'bg-[#1a0826]',
+    quickChipHover: 'hover:bg-[#ff007f]/30',
+    quickChipBorder: 'border-[#ff007f]/50',
+    quickChipText: 'text-[#ff79c6] hover:text-[#00ffff]',
+  },
+};
+
+const TERMINAL_HISTORY_STORAGE_KEY = 'gemini_terminal_command_history';
+const TERMINAL_THEME_STORAGE_KEY = 'gemini_terminal_theme_preset';
+const TERMINAL_GLOBAL_PKGS_STORAGE_KEY = 'gemini_terminal_global_packages';
 
 export interface TerminalLine {
   id: string;
@@ -64,8 +201,70 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
   const [activeTab, setActiveTab] = useState<'terminal' | 'build' | 'output'>('terminal');
   const [isMaximized, setIsMaximized] = useState(false);
   const [inputVal, setInputVal] = useState('');
-  const [history, setHistory] = useState<string[]>([]);
+
+  // Persistent Command History via localStorage
+  const [history, setHistory] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(TERMINAL_HISTORY_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {
+      // ignore
+    }
+    return [
+      'npm run build',
+      'ls -la',
+      'pwd',
+    ];
+  });
   const [historyIdx, setHistoryIdx] = useState<number>(-1);
+
+  // Terminal Theme Preset
+  const [themeId, setThemeId] = useState<TerminalThemeId>(() => {
+    try {
+      const saved = localStorage.getItem(TERMINAL_THEME_STORAGE_KEY) as TerminalThemeId;
+      if (saved && TERMINAL_THEMES[saved]) return saved;
+    } catch {
+      // ignore
+    }
+    return 'github-dark';
+  });
+  const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
+
+  // Sync theme changes to localStorage
+  const handleSelectTheme = (tid: TerminalThemeId) => {
+    setThemeId(tid);
+    try {
+      localStorage.setItem(TERMINAL_THEME_STORAGE_KEY, tid);
+    } catch {
+      // ignore
+    }
+    setIsThemeMenuOpen(false);
+  };
+
+  const currentTheme = TERMINAL_THEMES[themeId] || TERMINAL_THEMES['github-dark'];
+
+  // Save history updates to localStorage
+  const appendHistory = (newCmd: string) => {
+    const trimmed = newCmd.trim();
+    if (!trimmed) return;
+    setHistory(prev => {
+      // Avoid immediate exact duplicates at end of history
+      const updated = prev.length > 0 && prev[prev.length - 1] === trimmed
+        ? prev
+        : [...prev, trimmed].slice(-150); // retain last 150 commands
+      try {
+        localStorage.setItem(TERMINAL_HISTORY_STORAGE_KEY, JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
+    setHistoryIdx(-1);
+  };
+
   const [isBuilding, setIsBuilding] = useState(false);
   const [buildStatus, setBuildStatus] = useState<'idle' | 'building' | 'success' | 'error'>('success');
   const [lastBuildTime, setLastBuildTime] = useState('0.42s');
@@ -93,8 +292,21 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
   });
 
   // Interactive Sub-Shells
-  const [replMode, setReplMode] = useState<'bash' | 'python' | 'node'>('bash');
+  const [replMode, setReplMode] = useState<'bash' | 'python' | 'node' | 'gemini'>('bash');
   const [pythonContext, setPythonContext] = useState<Record<string, any>>({});
+
+  // Global npm packages (e.g., @google/gemini-cli)
+  const [globalPackages, setGlobalPackages] = useState<Record<string, string>>(() => {
+    try {
+      const saved = localStorage.getItem(TERMINAL_GLOBAL_PKGS_STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // ignore
+    }
+    return {
+      '@google/gemini-cli': '1.4.2',
+    };
+  });
 
   // Nano Interactive Mode
   const [nanoState, setNanoState] = useState<{
@@ -157,6 +369,7 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
   const getPromptPrefix = () => {
     if (replMode === 'python') return '>>> ';
     if (replMode === 'node') return '> ';
+    if (replMode === 'gemini') return 'gemini> ';
     return `developer@sandbox:${currentDir}$ `;
   };
 
@@ -234,9 +447,8 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
     const trimmed = cmd.trim();
     if (!trimmed) return;
 
-    // Add to command history
-    setHistory(prev => [...prev, trimmed]);
-    setHistoryIdx(-1);
+    // Add to persistent command history
+    appendHistory(trimmed);
 
     const promptText = getPromptPrefix();
     const userLine: TerminalLine = {
@@ -322,6 +534,67 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
 
       setLines(prev => [...prev, userLine, ...outLines]);
       setInputVal('');
+      return;
+    }
+
+    if (replMode === 'gemini') {
+      if (trimmed === 'exit' || trimmed === 'quit' || trimmed === ':q') {
+        setReplMode('bash');
+        setLines(prev => [
+          ...prev,
+          userLine,
+          {
+            id: Math.random().toString(),
+            type: 'info',
+            text: 'Exited Gemini CLI session. Returned to bash.',
+          },
+        ]);
+        setInputVal('');
+        return;
+      }
+
+      setLines(prev => [
+        ...prev,
+        userLine,
+        {
+          id: Math.random().toString(),
+          type: 'info',
+          text: '⠋ Querying Google Gemini Developer CLI...',
+        },
+      ]);
+      setInputVal('');
+
+      try {
+        const response = await fetch('/api/gemini-cli', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: trimmed,
+            files: files.map(f => ({ name: f.name, content: f.content })),
+          }),
+        });
+
+        const data = await response.json();
+        const cliText = data.text || 'Command completed with no output.';
+
+        setLines(prev => [
+          ...prev.filter(l => !l.text.includes('⠋ Querying Google Gemini Developer CLI...')),
+          {
+            id: Math.random().toString(),
+            type: 'output',
+            text: cliText,
+          },
+        ]);
+      } catch (err: any) {
+        setLines(prev => [
+          ...prev.filter(l => !l.text.includes('⠋ Querying Google Gemini Developer CLI...')),
+          {
+            id: Math.random().toString(),
+            type: 'error',
+            text: `gemini-cli error: ${err?.message || 'Failed to communicate with Gemini API'}`,
+          },
+        ]);
+      }
       return;
     }
 
@@ -951,41 +1224,84 @@ Type ".exit" or "exit" to return to bash.`,
       // 13. NPM (Install Packages & Run Scripts)
       case 'npm': {
         const npmAction = args[0];
+        const isGlobal = args.includes('-g') || args.includes('--global');
+
         if (npmAction === 'i' || npmAction === 'install') {
           const packages = args.slice(1).filter(p => !p.startsWith('-'));
           const targetPkgs = packages.length > 0 ? packages : ['dependencies'];
 
-          // Add to package.json in workspace
-          const pkgJson = files.find(f => f.name === 'package.json');
-          let parsedPkg: any = {
-            name: projectName.toLowerCase().replace(/\s+/g, '-'),
-            version: '1.0.0',
-            dependencies: {},
-          };
-
-          if (pkgJson) {
+          if (isGlobal) {
+            // Global NPM Package Installation (e.g. npm i -g @google/gemini-cli)
+            const updatedGlobals = { ...globalPackages };
+            targetPkgs.forEach(pkg => {
+              updatedGlobals[pkg] = pkg.includes('gemini') ? '1.4.2' : '1.0.0';
+            });
+            setGlobalPackages(updatedGlobals);
             try {
-              parsedPkg = JSON.parse(pkgJson.content);
+              localStorage.setItem(TERMINAL_GLOBAL_PKGS_STORAGE_KEY, JSON.stringify(updatedGlobals));
             } catch {
-              // fallback
+              // ignore
             }
+
+            outputLines.push({
+              id: Math.random().toString(),
+              type: 'success',
+              text: targetPkgs
+                .map(p => `+ ${p}@${p.includes('gemini') ? '1.4.2' : '1.0.0'}`)
+                .join('\n') +
+                `\nadded ${targetPkgs.length} package${targetPkgs.length > 1 ? 's' : ''} in 0.94s\nInstalled to /home/developer/.npm-global/bin\nRun "${targetPkgs[0].replace('@google/', '')} --help" to use.`,
+            });
+          } else {
+            // Local package installation
+            const pkgJson = files.find(f => f.name === 'package.json');
+            let parsedPkg: any = {
+              name: projectName.toLowerCase().replace(/\s+/g, '-'),
+              version: '1.0.0',
+              dependencies: {},
+            };
+
+            if (pkgJson) {
+              try {
+                parsedPkg = JSON.parse(pkgJson.content);
+              } catch {
+                // fallback
+              }
+            }
+
+            if (!parsedPkg.dependencies) parsedPkg.dependencies = {};
+            targetPkgs.forEach(pkg => {
+              parsedPkg.dependencies[pkg] = '^1.0.0';
+            });
+
+            handleUpsertWorkspaceFile('package.json', JSON.stringify(parsedPkg, null, 2));
+
+            outputLines.push({
+              id: Math.random().toString(),
+              type: 'success',
+              text: targetPkgs
+                .map(p => `+ ${p}@1.0.0`)
+                .join('\n') +
+                `\nadded ${targetPkgs.length} package${targetPkgs.length > 1 ? 's' : ''}, and audited ${files.length + 24} packages in 1.18s\nfound 0 vulnerabilities (updated package.json)`,
+            });
           }
-
-          if (!parsedPkg.dependencies) parsedPkg.dependencies = {};
-          targetPkgs.forEach(pkg => {
-            parsedPkg.dependencies[pkg] = '^1.0.0';
-          });
-
-          handleUpsertWorkspaceFile('package.json', JSON.stringify(parsedPkg, null, 2));
-
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'success',
-            text: targetPkgs
-              .map(p => `+ ${p}@1.0.0`)
-              .join('\n') +
-              `\nadded ${targetPkgs.length} package${targetPkgs.length > 1 ? 's' : ''}, and audited ${files.length + 24} packages in 1.18s\nfound 0 vulnerabilities (updated package.json)`,
-          });
+        } else if (npmAction === 'list' || npmAction === 'ls') {
+          if (isGlobal) {
+            const listText = `/home/developer/.npm-global/lib\n` +
+              Object.entries(globalPackages)
+                .map(([pkg, ver]) => `├── ${pkg}@${ver}`)
+                .join('\n');
+            outputLines.push({
+              id: Math.random().toString(),
+              type: 'output',
+              text: listText,
+            });
+          } else {
+            outputLines.push({
+              id: Math.random().toString(),
+              type: 'output',
+              text: `${projectName.toLowerCase()}@1.0.0 /home/developer/project\n├── vite@8.3.0\n├── tailwindcss@4.0.0\n└── react@19.0.0`,
+            });
+          }
         } else if (npmAction === 'run') {
           const script = args[1];
           if (script === 'build') {
@@ -1294,9 +1610,123 @@ Type ".exit" or "exit" to return to bash.`,
         setInputVal('');
         return;
 
-      // 19. COPILOT & BRAINSTORMER COMMANDS
-      case 'ai':
+      // 19. COPILOT, GEMINI CLI & BRAINSTORMER COMMANDS
+      case 'gemini-cli':
       case 'gemini': {
+        const subcmd = args[0];
+        const isHelp = !subcmd || args.includes('--help') || args.includes('-h');
+        const isVersion = args.includes('-v') || args.includes('--version');
+
+        if (isVersion) {
+          outputLines.push({
+            id: Math.random().toString(),
+            type: 'info',
+            text: `@google/gemini-cli v1.4.2 (Official Google Gemini Developer CLI)\nTarget runtime: node v22.14.0, api: @google/genai`,
+          });
+          break;
+        }
+
+        if (isHelp && (!subcmd || subcmd === 'help')) {
+          outputLines.push({
+            id: Math.random().toString(),
+            type: 'info',
+            text: `Google Gemini Developer CLI (@google/gemini-cli v1.4.2)
+Usage:
+  gemini <prompt>                  - Query Gemini directly from the command line
+  gemini chat                      - Enter interactive Gemini REPL session
+  gemini review [file]             - Review workspace files or current file
+  gemini explain [file]            - Explain architecture and code in file
+  gemini fix <error message>       - Analyze and generate patch for error
+  gemini models                    - List supported Gemini models
+  gemini --version                 - Print CLI version
+
+Examples:
+  gemini "optimize event loop in app.js"
+  gemini review index.html
+  gemini chat`,
+          });
+          break;
+        }
+
+        if (subcmd === 'models') {
+          outputLines.push({
+            id: Math.random().toString(),
+            type: 'output',
+            text: `Available Models (@google/genai):
+  • gemini-flash-latest      [default, ultra-fast]
+  • gemini-3.1-flash-lite    [low latency & high throughput]
+  • gemini-3.8-flash         [deep reasoning & coding partner]`,
+          });
+          break;
+        }
+
+        if (subcmd === 'chat' || subcmd === 'repl') {
+          setReplMode('gemini');
+          outputLines.push({
+            id: Math.random().toString(),
+            type: 'info',
+            text: `Starting interactive Gemini CLI REPL session (@google/gemini-cli v1.4.2)...
+Model: gemini-flash-latest • Workspace context attached (${files.length} files).
+Type "exit", "quit" or ":q" to return to bash.`,
+          });
+          break;
+        }
+
+        // Subcommands: review, explain, fix or direct prompt
+        let queryPrompt = '';
+        if (subcmd === 'review') {
+          const targetFile = args[1] || 'all files';
+          queryPrompt = `Review code in ${targetFile} and provide recommendations for performance, security, and structure.`;
+        } else if (subcmd === 'explain') {
+          const targetFile = args[1] || 'current workspace';
+          queryPrompt = `Explain architecture and design of ${targetFile}.`;
+        } else if (subcmd === 'fix') {
+          queryPrompt = `Fix error: ${args.slice(1).join(' ')}`;
+        } else {
+          queryPrompt = args.join(' ');
+        }
+
+        outputLines.push({
+          id: Math.random().toString(),
+          type: 'info',
+          text: `[gemini-cli] Querying Gemini for: "${queryPrompt}"...`,
+        });
+
+        // Trigger request to /api/gemini-cli
+        setTimeout(async () => {
+          try {
+            const resp = await fetch('/api/gemini-cli', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                prompt: queryPrompt,
+                files: files.map(f => ({ name: f.name, content: f.content })),
+              }),
+            });
+            const data = await resp.json();
+            setLines(prev => [
+              ...prev,
+              {
+                id: Math.random().toString(),
+                type: 'output',
+                text: data.text || 'Done.',
+              },
+            ]);
+          } catch (err: any) {
+            setLines(prev => [
+              ...prev,
+              {
+                id: Math.random().toString(),
+                type: 'error',
+                text: `gemini-cli error: ${err?.message || 'Failed to query API'}`,
+              },
+            ]);
+          }
+        }, 50);
+        break;
+      }
+
+      case 'ai': {
         const query = args.join(' ');
         if (!query) {
           outputLines.push({
@@ -1395,7 +1825,15 @@ Type ".exit" or "exit" to return to bash.`,
     whoami, uname, uptime    - Display system identity and runtime uptime
     env, export <KEY>=<VAL>  - Inspect and configure environment variables
     clear, history           - Clear terminal or view past commands
-    ai <query>               - Query Gemini Copilot directly from the terminal`,
+
+  Gemini Developer CLI:
+    gemini <prompt>          - Query Gemini directly from terminal
+    gemini chat              - Launch interactive Gemini REPL session
+    gemini review [file]     - Perform code review on file or project
+    gemini explain [file]    - Structural code and architecture walkthrough
+    gemini fix <error>       - Analyze error and output patch
+    gemini models            - Display available @google/genai models
+    npm i -g @google/gemini-cli - Install Gemini CLI globally`,
         });
         break;
 
@@ -1466,31 +1904,31 @@ Type ".exit" or "exit" to return to bash.`,
 
   return (
     <div
-      className={`border-t border-[#30363d] bg-[#0d1117] flex flex-col transition-all duration-200 select-none z-30 ${
+      className={`border-t ${currentTheme.headerBorder} ${currentTheme.bodyBg} flex flex-col transition-all duration-200 select-none z-30 ${
         isMaximized ? 'h-[440px]' : 'h-[250px]'
       }`}
     >
       {/* Terminal Titlebar & Tabs */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#161b22] border-b border-[#30363d] text-xs">
+      <div className={`flex items-center justify-between px-3 py-1.5 ${currentTheme.headerBg} border-b ${currentTheme.headerBorder} text-xs`}>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 text-slate-300 mr-2">
-            <TerminalIcon className="w-3.5 h-3.5 text-emerald-400" />
+            <TerminalIcon className={`w-3.5 h-3.5 ${currentTheme.promptColor}`} />
             <span className="font-semibold text-slate-200">LINUX TERMINAL</span>
-            <span className="text-[10px] bg-slate-800 text-slate-400 px-1 py-0.2 rounded border border-slate-700">
+            <span className="text-[10px] bg-black/40 text-slate-300 px-1 py-0.2 rounded border border-white/10">
               {replMode === 'python' ? 'Python 3.12' : replMode === 'node' ? 'Node v22' : 'bash 5.2'}
             </span>
           </div>
 
-          <div className="flex items-center gap-1 bg-[#0d1117] p-0.5 rounded border border-[#21262d]">
+          <div className="flex items-center gap-1 bg-black/30 p-0.5 rounded border border-white/10">
             <button
               onClick={() => setActiveTab('terminal')}
               className={`px-2 py-0.5 rounded text-[11px] transition-colors flex items-center gap-1 ${
                 activeTab === 'terminal'
-                  ? 'bg-[#21262d] text-emerald-300 font-medium'
+                  ? `${currentTheme.activeTabBg} ${currentTheme.promptColor} font-medium shadow-sm`
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <TerminalSquare className="w-3 h-3 text-emerald-400" />
+              <TerminalSquare className={`w-3 h-3 ${currentTheme.promptColor}`} />
               <span>Shell</span>
               {nanoState.isOpen && (
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
@@ -1500,7 +1938,7 @@ Type ".exit" or "exit" to return to bash.`,
               onClick={() => setActiveTab('build')}
               className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] transition-colors ${
                 activeTab === 'build'
-                  ? 'bg-[#21262d] text-sky-300 font-medium'
+                  ? `${currentTheme.activeTabBg} text-sky-300 font-medium shadow-sm`
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -1513,7 +1951,7 @@ Type ".exit" or "exit" to return to bash.`,
               onClick={() => setActiveTab('output')}
               className={`px-2 py-0.5 rounded text-[11px] transition-colors ${
                 activeTab === 'output'
-                  ? 'bg-[#21262d] text-sky-300 font-medium'
+                  ? `${currentTheme.activeTabBg} text-sky-300 font-medium shadow-sm`
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -1524,6 +1962,52 @@ Type ".exit" or "exit" to return to bash.`,
 
         {/* Right Terminal Action Controls */}
         <div className="flex items-center gap-1.5 text-slate-400">
+          {/* Theme Selector Popover */}
+          <div className="relative">
+            <button
+              onClick={() => setIsThemeMenuOpen(prev => !prev)}
+              className="flex items-center gap-1 px-2 py-0.5 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded border border-white/10 text-[11px] transition-colors"
+              title="Change Terminal Theme (Dracula, Solarized, Nord, Monokai, Cyberpunk, GitHub)"
+            >
+              <Palette className="w-3 h-3 text-amber-400" />
+              <span>{currentTheme.name}</span>
+              <ChevronDown className="w-3 h-3 opacity-60" />
+            </button>
+
+            {isThemeMenuOpen && (
+              <div
+                className="absolute right-0 bottom-full mb-1 w-48 bg-[#161b22] border border-[#30363d] rounded-lg shadow-xl z-50 py-1 font-sans text-xs overflow-hidden backdrop-blur-md"
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 border-b border-[#30363d]">
+                  Terminal Theme Palette
+                </div>
+                {Object.values(TERMINAL_THEMES).map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => handleSelectTheme(t.id)}
+                    className={`w-full text-left px-2.5 py-1.5 flex items-center justify-between text-xs transition-colors ${
+                      themeId === t.id
+                        ? 'bg-[#21262d] text-white font-medium'
+                        : 'text-slate-300 hover:bg-[#21262d]/60 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full ring-1 ring-white/20"
+                        style={{ backgroundColor: t.badge }}
+                      />
+                      <span>{t.name}</span>
+                    </div>
+                    {themeId === t.id && (
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <button
             onClick={runBuildCommand}
             disabled={isBuilding}
@@ -1539,7 +2023,7 @@ Type ".exit" or "exit" to return to bash.`,
               if (activeTab === 'terminal') setLines([]);
               else if (activeTab === 'build') setBuildLogs([]);
             }}
-            className="p-1 hover:text-slate-200 hover:bg-[#21262d] rounded transition-colors"
+            className="p-1 hover:text-slate-200 hover:bg-white/10 rounded transition-colors"
             title="Clear terminal screen (Ctrl+L)"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -1547,7 +2031,7 @@ Type ".exit" or "exit" to return to bash.`,
 
           <button
             onClick={() => setIsMaximized(prev => !prev)}
-            className="p-1 hover:text-slate-200 hover:bg-[#21262d] rounded transition-colors"
+            className="p-1 hover:text-slate-200 hover:bg-white/10 rounded transition-colors"
             title={isMaximized ? 'Restore Size' : 'Maximize'}
           >
             {isMaximized ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
@@ -1555,7 +2039,7 @@ Type ".exit" or "exit" to return to bash.`,
 
           <button
             onClick={onToggle}
-            className="p-1 hover:text-slate-200 hover:bg-[#21262d] rounded transition-colors"
+            className="p-1 hover:text-slate-200 hover:bg-white/10 rounded transition-colors"
             title="Collapse Terminal"
           >
             <ChevronDown className="w-4 h-4" />
@@ -1565,7 +2049,7 @@ Type ".exit" or "exit" to return to bash.`,
 
       {/* Tab 1: Terminal Shell or Nano Editor */}
       {activeTab === 'terminal' && (
-        <div className="flex-1 flex flex-col bg-[#090d16] overflow-hidden relative">
+        <div className={`flex-1 flex flex-col ${currentTheme.inputBg} overflow-hidden relative`}>
           {/* If Nano Mode is active */}
           {nanoState.isOpen ? (
             <NanoEditor
@@ -1597,7 +2081,10 @@ Type ".exit" or "exit" to return to bash.`,
           ) : (
             /* Interactive Shell View */
             <div
-              onClick={() => inputRef.current?.focus()}
+              onClick={() => {
+                setIsThemeMenuOpen(false);
+                inputRef.current?.focus();
+              }}
               className="flex-1 flex flex-col p-2.5 overflow-hidden font-mono text-xs cursor-text select-text"
             >
               {/* Output History List */}
@@ -1606,10 +2093,10 @@ Type ".exit" or "exit" to return to bash.`,
                   <div key={line.id} className="leading-relaxed">
                     {line.type === 'input' ? (
                       <div className="flex items-center gap-1.5 text-slate-200 flex-wrap">
-                        <span className="text-emerald-400 font-semibold select-none">
+                        <span className={`${currentTheme.promptColor} font-semibold select-none`}>
                           {line.promptPrefix || getPromptPrefix()}
                         </span>
-                        <span className="text-slate-100">{line.text}</span>
+                        <span className={currentTheme.inputTextColor}>{line.text}</span>
                       </div>
                     ) : (
                       <div
@@ -1617,10 +2104,10 @@ Type ".exit" or "exit" to return to bash.`,
                           line.type === 'error'
                             ? 'text-rose-400'
                             : line.type === 'success'
-                            ? 'text-emerald-400'
+                            ? currentTheme.promptColor
                             : line.type === 'info'
                             ? 'text-sky-400'
-                            : 'text-slate-300'
+                            : currentTheme.outputColor
                         }`}
                       >
                         {line.text}
@@ -1632,9 +2119,13 @@ Type ".exit" or "exit" to return to bash.`,
               </div>
 
               {/* Quick Linux Command Shortcut Chips */}
-              <div className="flex items-center gap-1 py-1 overflow-x-auto no-scrollbar border-t border-[#1e293b] select-none text-[10px]">
+              <div className="flex items-center gap-1 py-1 overflow-x-auto no-scrollbar border-t border-white/10 select-none text-[10px]">
                 <span className="text-slate-500 uppercase tracking-wider text-[9px] mr-1 shrink-0">Quick:</span>
                 {[
+                  { label: 'gemini --help', cmd: 'gemini --help' },
+                  { label: 'gemini chat', cmd: 'gemini chat' },
+                  { label: 'gemini review', cmd: 'gemini review' },
+                  { label: 'npm i -g @google/gemini-cli', cmd: 'npm i -g @google/gemini-cli' },
                   { label: 'ls -la', cmd: 'ls -la' },
                   { label: 'pwd', cmd: 'pwd' },
                   { label: 'nano index.html', cmd: 'nano index.html' },
@@ -1642,9 +2133,9 @@ Type ".exit" or "exit" to return to bash.`,
                   { label: 'node', cmd: 'node' },
                   { label: 'npm i lodash', cmd: 'npm i lodash' },
                   { label: 'git status', cmd: 'git status' },
-                  { label: 'curl -I https://api.github.com', cmd: 'curl -I https://api.github.com' },
                   { label: 'chmod +x', cmd: 'chmod +x app.js' },
                   { label: 'clear', cmd: 'clear' },
+                  { label: 'history', cmd: 'history' },
                   { label: 'help', cmd: 'help' },
                 ].map(item => (
                   <button
@@ -1653,7 +2144,7 @@ Type ".exit" or "exit" to return to bash.`,
                       setInputVal(item.cmd);
                       executeCommand(item.cmd);
                     }}
-                    className="px-1.5 py-0.5 bg-[#161b22] hover:bg-[#21262d] text-slate-300 hover:text-emerald-300 rounded border border-[#30363d] transition-colors shrink-0"
+                    className={`px-1.5 py-0.5 ${currentTheme.quickChipBg} ${currentTheme.quickChipHover} ${currentTheme.quickChipText} rounded border ${currentTheme.quickChipBorder} transition-colors shrink-0`}
                   >
                     {item.label}
                   </button>
@@ -1662,7 +2153,7 @@ Type ".exit" or "exit" to return to bash.`,
 
               {/* Active Command Input Line */}
               <div className="flex items-center gap-1.5 pt-1 text-xs">
-                <span className="text-emerald-400 font-semibold shrink-0 select-none">
+                <span className={`${currentTheme.promptColor} font-semibold shrink-0 select-none`}>
                   {getPromptPrefix()}
                 </span>
                 <input
@@ -1673,8 +2164,8 @@ Type ".exit" or "exit" to return to bash.`,
                   onKeyDown={handleKeyDown}
                   autoComplete="off"
                   spellCheck="false"
-                  className="flex-1 bg-transparent border-none outline-none text-slate-100 font-mono text-xs caret-emerald-400"
-                  placeholder={replMode === 'python' ? 'print(2 + 2)' : replMode === 'node' ? 'console.log("hello")' : 'type command...'}
+                  className={`flex-1 bg-transparent border-none outline-none ${currentTheme.inputTextColor} font-mono text-xs`}
+                  placeholder={replMode === 'python' ? 'print(2 + 2)' : replMode === 'node' ? 'console.log("hello")' : replMode === 'gemini' ? 'ask gemini anything... (type "exit" to quit)' : 'type command... (Up/Down for history, try "gemini --help")'}
                 />
               </div>
             </div>

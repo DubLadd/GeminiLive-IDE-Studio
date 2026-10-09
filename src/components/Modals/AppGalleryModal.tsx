@@ -154,8 +154,6 @@ export const AppGalleryModal: React.FC<AppGalleryModalProps> = ({
 
   const handleDeleteApp = async (app: GalleryApp, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm(`Delete "${app.title}" from App Gallery?`)) return;
-
     deleteLocalApp(app.id);
     if (user) {
       try {
