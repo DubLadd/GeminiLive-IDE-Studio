@@ -16,7 +16,13 @@ import {
   CheckCircle2,
   ArrowRight,
   Code,
-  Palette
+  Palette,
+  Search,
+  Columns2,
+  Rows2,
+  CheckCircle,
+  AlertCircle,
+  AlignJustify
 } from 'lucide-react';
 import { NanoEditor } from './NanoEditor';
 import {
@@ -25,7 +31,18 @@ import {
   executeNodeCode,
 } from '../../utils/terminalExecutors';
 
-export type TerminalThemeId = 'github-dark' | 'dracula' | 'solarized-dark' | 'nord' | 'monokai' | 'cyberpunk';
+export type TerminalThemeId =
+  | 'vscode-dark-plus'
+  | 'vscode-light-plus'
+  | 'vscode-high-contrast'
+  | 'vscode-monokai'
+  | 'vscode-abyss'
+  | 'github-dark'
+  | 'dracula'
+  | 'solarized-dark'
+  | 'nord'
+  | 'monokai'
+  | 'cyberpunk';
 
 export interface TerminalThemeConfig {
   id: TerminalThemeId;
@@ -47,6 +64,96 @@ export interface TerminalThemeConfig {
 }
 
 export const TERMINAL_THEMES: Record<TerminalThemeId, TerminalThemeConfig> = {
+  'vscode-dark-plus': {
+    id: 'vscode-dark-plus',
+    name: 'VS Code Dark+ (Default)',
+    badge: '#007acc',
+    headerBg: 'bg-[#252526]',
+    headerBorder: 'border-[#3c3c3c]',
+    bodyBg: 'bg-[#1e1e1e]',
+    inputBg: 'bg-[#181818]',
+    promptColor: 'text-[#4ec9b0]',
+    outputColor: 'text-[#cccccc]',
+    inputTextColor: 'text-[#d4d4d4]',
+    accentColor: '#007acc',
+    activeTabBg: 'bg-[#1e1e1e]',
+    quickChipBg: 'bg-[#252526]',
+    quickChipHover: 'hover:bg-[#2a2d2e]',
+    quickChipBorder: 'border-[#3c3c3c]',
+    quickChipText: 'text-[#cccccc] hover:text-[#4ec9b0]',
+  },
+  'vscode-light-plus': {
+    id: 'vscode-light-plus',
+    name: 'VS Code Light+',
+    badge: '#007acc',
+    headerBg: 'bg-[#f3f3f3]',
+    headerBorder: 'border-[#e5e5e5]',
+    bodyBg: 'bg-[#ffffff]',
+    inputBg: 'bg-[#f8f8f8]',
+    promptColor: 'text-[#008000]',
+    outputColor: 'text-[#333333]',
+    inputTextColor: 'text-[#111111]',
+    accentColor: '#007acc',
+    activeTabBg: 'bg-[#ffffff]',
+    quickChipBg: 'bg-[#f3f3f3]',
+    quickChipHover: 'hover:bg-[#e8e8e8]',
+    quickChipBorder: 'border-[#dcdcdc]',
+    quickChipText: 'text-[#333333] hover:text-[#008000]',
+  },
+  'vscode-high-contrast': {
+    id: 'vscode-high-contrast',
+    name: 'VS Code High Contrast',
+    badge: '#00ffff',
+    headerBg: 'bg-[#000000]',
+    headerBorder: 'border-[#6fc3df]',
+    bodyBg: 'bg-[#000000]',
+    inputBg: 'bg-[#0a0a0a]',
+    promptColor: 'text-[#00ffff]',
+    outputColor: 'text-[#ffffff]',
+    inputTextColor: 'text-[#ffff00]',
+    accentColor: '#ffff00',
+    activeTabBg: 'bg-[#0e639c]/50',
+    quickChipBg: 'bg-[#000000]',
+    quickChipHover: 'hover:bg-[#1a1a1a]',
+    quickChipBorder: 'border-[#6fc3df]',
+    quickChipText: 'text-[#ffffff] hover:text-[#00ffff]',
+  },
+  'vscode-monokai': {
+    id: 'vscode-monokai',
+    name: 'VS Code Monokai',
+    badge: '#f92672',
+    headerBg: 'bg-[#272822]',
+    headerBorder: 'border-[#3e3d32]',
+    bodyBg: 'bg-[#1e1f1c]',
+    inputBg: 'bg-[#171814]',
+    promptColor: 'text-[#a6e22e]',
+    outputColor: 'text-[#f8f8f2]',
+    inputTextColor: 'text-[#f8f8f2]',
+    accentColor: '#f92672',
+    activeTabBg: 'bg-[#3e3d32]',
+    quickChipBg: 'bg-[#272822]',
+    quickChipHover: 'hover:bg-[#3e3d32]',
+    quickChipBorder: 'border-[#75715e]/50',
+    quickChipText: 'text-[#f8f8f2] hover:text-[#a6e22e]',
+  },
+  'vscode-abyss': {
+    id: 'vscode-abyss',
+    name: 'VS Code Abyss',
+    badge: '#6688cc',
+    headerBg: 'bg-[#051336]',
+    headerBorder: 'border-[#102a6b]',
+    bodyBg: 'bg-[#000c18]',
+    inputBg: 'bg-[#00060d]',
+    promptColor: 'text-[#22aa44]',
+    outputColor: 'text-[#80a0ff]',
+    inputTextColor: 'text-[#e0e8ff]',
+    accentColor: '#80a0ff',
+    activeTabBg: 'bg-[#102a6b]',
+    quickChipBg: 'bg-[#051336]',
+    quickChipHover: 'hover:bg-[#102a6b]',
+    quickChipBorder: 'border-[#18398b]',
+    quickChipText: 'text-[#a0c0ff] hover:text-[#ffffff]',
+  },
   'github-dark': {
     id: 'github-dark',
     name: 'GitHub Dark',
@@ -161,6 +268,176 @@ const TERMINAL_HISTORY_STORAGE_KEY = 'gemini_terminal_command_history';
 const TERMINAL_THEME_STORAGE_KEY = 'gemini_terminal_theme_preset';
 const TERMINAL_GLOBAL_PKGS_STORAGE_KEY = 'gemini_terminal_global_packages';
 
+function highlightTerminalEntities(text: string, theme: TerminalThemeConfig) {
+  const tokenRegex = /(https?:\/\/[^\s]+)|(\b(?:src|components|utils|data|types|lib|dist)\/[^\s:]+)|(\b[a-zA-Z0-9_\-\.]+\.(?:ts|tsx|js|jsx|json|sql|yaml|yml|html|css|md)\b)|(\[\d{1,2}:\d{2}:\d{2}(?:\s*[AP]M)?\])/g;
+
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = tokenRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index));
+    }
+
+    const [, url, path, file, timestamp] = match;
+
+    if (url) {
+      parts.push(
+        <span key={match.index} className="text-sky-400 underline underline-offset-2 hover:text-sky-300 font-medium">
+          {url}
+        </span>
+      );
+    } else if (path || file) {
+      parts.push(
+        <span key={match.index} className="text-amber-300 bg-amber-500/10 px-1 py-0.5 rounded text-[11px] font-mono">
+          {path || file}
+        </span>
+      );
+    } else if (timestamp) {
+      parts.push(
+        <span key={match.index} className="text-slate-500 font-mono text-[10px] select-none">
+          {timestamp}
+        </span>
+      );
+    }
+
+    lastIndex = tokenRegex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : text;
+}
+
+function renderReadableTerminalLine(lineText: string, lineType: string, theme: TerminalThemeConfig) {
+  // 1. Error messages
+  if (lineType === 'error' || lineText.startsWith('Error:') || lineText.startsWith('ERR!') || lineText.includes('command not found') || lineText.includes('failed')) {
+    return (
+      <div className="flex items-start gap-1.5 pl-2 py-0.5 my-0.5 border-l-2 border-rose-500 bg-rose-500/10 text-rose-300 font-mono text-xs rounded-r">
+        <span className="text-rose-400 font-bold select-none shrink-0">✖</span>
+        <span className="whitespace-pre-wrap break-all leading-relaxed">{lineText}</span>
+      </div>
+    );
+  }
+
+  // 2. Success messages
+  if (lineType === 'success' || lineText.startsWith('✓') || lineText.includes('[SUCCESS]') || lineText.includes('Build succeeded') || lineText.includes('written to workspace') || lineText.includes('found 0 vulnerabilities') || lineText.includes('Everything up to date')) {
+    return (
+      <div className="flex items-start gap-1.5 pl-2 py-0.5 my-0.5 border-l-2 border-emerald-500 bg-emerald-500/10 text-emerald-300 font-mono text-xs rounded-r">
+        <span className="text-emerald-400 font-bold select-none shrink-0">✓</span>
+        <span className="whitespace-pre-wrap break-all leading-relaxed">{lineText}</span>
+      </div>
+    );
+  }
+
+  // 3. Info / Notices
+  if (lineType === 'info') {
+    return (
+      <div className="flex items-start gap-1.5 pl-1.5 text-sky-400 font-mono text-xs whitespace-pre-wrap break-all leading-relaxed">
+        <span className="select-none text-sky-500 font-bold">ℹ</span>
+        <span>{lineText}</span>
+      </div>
+    );
+  }
+
+  // 4. Multi-line output formatting (git log, diff, ps, tree, etc.)
+  const rawSubLines = lineText.split('\n');
+  if (rawSubLines.length > 1) {
+    return (
+      <div className={`space-y-0.5 font-mono text-xs leading-relaxed ${theme.outputColor}`}>
+        {rawSubLines.map((sub, idx) => {
+          // Git commit line
+          if (sub.startsWith('commit ')) {
+            return (
+              <div key={idx} className="flex items-center gap-1.5 text-amber-300 font-semibold pt-1">
+                <span className="text-amber-500">commit</span>
+                <span className="bg-amber-500/10 px-1 py-0.2 rounded text-[11px] font-mono">{sub.substring(7)}</span>
+              </div>
+            );
+          }
+          // Git branch
+          if (sub.startsWith('* ')) {
+            return (
+              <div key={idx} className="text-emerald-400 font-bold flex items-center gap-1">
+                <span>*</span>
+                <span className="bg-emerald-500/10 px-1.5 py-0.5 rounded text-emerald-300">{sub.substring(2)}</span>
+                <span className="text-[10px] text-emerald-500/80 font-normal">(active branch)</span>
+              </div>
+            );
+          }
+          // Git diff additions / deletions
+          if (sub.startsWith('+') && !sub.startsWith('+++')) {
+            return <div key={idx} className="text-emerald-400 bg-emerald-500/10 px-1 rounded">{sub}</div>;
+          }
+          if (sub.startsWith('-') && !sub.startsWith('---')) {
+            return <div key={idx} className="text-rose-400 bg-rose-500/10 px-1 rounded">{sub}</div>;
+          }
+          // npm tree lines
+          if (sub.includes('├──') || sub.includes('└──')) {
+            return (
+              <div key={idx} className="text-sky-300 pl-1 font-mono">
+                {sub}
+              </div>
+            );
+          }
+          // Table header
+          if (sub.includes('PID') && sub.includes('TTY') && sub.includes('CMD')) {
+            return (
+              <div key={idx} className="text-slate-400 font-bold uppercase tracking-wider text-[11px] pb-0.5 border-b border-white/10">
+                {sub}
+              </div>
+            );
+          }
+          // ls -la
+          if (/^([d\-]r[w\-][x\-][r\-][w\-][x\-][r\-][w\-][x\-]|total\s+\d+)/.test(sub.trim())) {
+            const parts = sub.trim().split(/\s+/);
+            const perm = parts[0];
+            const isDir = perm.startsWith('d');
+            const name = parts.slice(8).join(' ') || parts[parts.length - 1];
+            return (
+              <div key={idx} className="font-mono text-xs whitespace-pre flex items-center gap-2 py-0.5">
+                <span className={isDir ? 'text-sky-400 font-bold' : 'text-slate-400'}>{perm}</span>
+                <span className="text-slate-500">{parts.slice(1, 8).join(' ')}</span>
+                <span className={isDir ? 'text-sky-300 font-semibold' : 'text-slate-100'}>{name}</span>
+              </div>
+            );
+          }
+          return (
+            <div key={idx} className="whitespace-pre-wrap break-all">
+              {highlightTerminalEntities(sub, theme)}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // 5. Single line ls -la
+  if (/^([d\-]r[w\-][x\-][r\-][w\-][x\-][r\-][w\-][x\-]|total\s+\d+)/.test(lineText.trim())) {
+    const parts = lineText.trim().split(/\s+/);
+    const perm = parts[0];
+    const isDir = perm.startsWith('d');
+    const name = parts.slice(8).join(' ') || parts[parts.length - 1];
+    return (
+      <div className="font-mono text-xs whitespace-pre flex items-center gap-2 py-0.5">
+        <span className={isDir ? 'text-sky-400 font-bold' : 'text-slate-400'}>{perm}</span>
+        <span className="text-slate-500">{parts.slice(1, 8).join(' ')}</span>
+        <span className={isDir ? 'text-sky-300 font-semibold' : 'text-slate-100'}>{name}</span>
+      </div>
+    );
+  }
+
+  // 6. Default single line
+  return (
+    <div className={`whitespace-pre-wrap break-all leading-relaxed ${theme.outputColor}`}>
+      {highlightTerminalEntities(lineText, theme)}
+    </div>
+  );
+}
+
 export interface TerminalLine {
   id: string;
   type: 'input' | 'output' | 'error' | 'success' | 'info' | 'system';
@@ -200,7 +477,6 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'terminal' | 'build' | 'output'>('terminal');
   const [isMaximized, setIsMaximized] = useState(false);
-  const [inputVal, setInputVal] = useState('');
 
   // Persistent Command History via localStorage
   const [history, setHistory] = useState<string[]>(() => {
@@ -219,9 +495,71 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
       'pwd',
     ];
   });
-  const [historyIdx, setHistoryIdx] = useState<number>(-1);
 
-  // Terminal Theme Preset
+  // Pane and Layout State
+  interface TerminalPane {
+    id: string;
+    lines: TerminalLine[];
+    currentDir: string;
+    replMode: 'bash' | 'python' | 'node' | 'gemini';
+    inputVal: string;
+    historyIdx: number;
+    pythonContext: Record<string, any>;
+    nanoState: {
+      isOpen: boolean;
+      fileName: string;
+      initialContent: string;
+    };
+  }
+
+  const initialLines: TerminalLine[] = [
+    {
+      id: 'init-1',
+      type: 'info',
+      text: 'Linux sandbox-cloud 6.6.0-x86_64 GNU/Linux (Ubuntu 24.04 LTS)',
+    },
+    {
+      id: 'init-2',
+      type: 'info',
+      text: 'Gemini Live IDE Extended Linux Terminal Shell (Bash 5.2 / Node.js 22.14 / Python 3.12)',
+    },
+    {
+      id: 'init-3',
+      type: 'output',
+      text: 'Type "help" for a list of Linux commands (cd, pwd, nano, git clone, curl, wget, python3, npm i, mkdir, rm, rn, chmod, cat).',
+    },
+  ];
+
+  const [panes, setPanes] = useState<TerminalPane[]>([
+    {
+      id: 'pane-1',
+      lines: [...initialLines],
+      currentDir: '~/project',
+      replMode: 'bash',
+      inputVal: '',
+      historyIdx: -1,
+      pythonContext: {},
+      nanoState: { isOpen: false, fileName: '', initialContent: '' }
+    }
+  ]);
+  const [activePaneId, setActivePaneId] = useState<string>('pane-1');
+  const [layout, setLayout] = useState<'single' | 'split-h' | 'split-v'>('single');
+
+  // Search State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+
+  const activePane = panes.find(p => p.id === activePaneId) || panes[0];
+
+  const updateActivePane = (updates: Partial<TerminalPane>) => {
+    setPanes(prev => prev.map(p => p.id === activePaneId ? { ...p, ...updates } : p));
+  };
+
+  const updatePane = (id: string, updates: Partial<TerminalPane>) => {
+    setPanes(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+  };
+
+  // Terminal Theme Preset (Defaults to classic VS Code Dark+)
   const [themeId, setThemeId] = useState<TerminalThemeId>(() => {
     try {
       const saved = localStorage.getItem(TERMINAL_THEME_STORAGE_KEY) as TerminalThemeId;
@@ -229,9 +567,10 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
     } catch {
       // ignore
     }
-    return 'github-dark';
+    return 'vscode-dark-plus';
   });
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
+  const [isComfortableSpacing, setIsComfortableSpacing] = useState(true);
 
   // Sync theme changes to localStorage
   const handleSelectTheme = (tid: TerminalThemeId) => {
@@ -244,7 +583,7 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
     setIsThemeMenuOpen(false);
   };
 
-  const currentTheme = TERMINAL_THEMES[themeId] || TERMINAL_THEMES['github-dark'];
+  const currentTheme = TERMINAL_THEMES[themeId] || TERMINAL_THEMES['vscode-dark-plus'];
 
   // Save history updates to localStorage
   const appendHistory = (newCmd: string) => {
@@ -262,7 +601,7 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
       }
       return updated;
     });
-    setHistoryIdx(-1);
+    updateActivePane({ historyIdx: -1 });
   };
 
   const [isBuilding, setIsBuilding] = useState(false);
@@ -270,7 +609,6 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
   const [lastBuildTime, setLastBuildTime] = useState('0.42s');
 
   // Linux Virtual Environment State
-  const [currentDir, setCurrentDir] = useState<string>('~/project');
   const [virtualDirs, setVirtualDirs] = useState<Set<string>>(new Set(['src', 'components', 'styles', 'scripts', 'public']));
   const [filePermissions, setFilePermissions] = useState<Record<string, number>>({
     'index.html': 0o644,
@@ -291,10 +629,6 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
     EDITOR: 'nano',
   });
 
-  // Interactive Sub-Shells
-  const [replMode, setReplMode] = useState<'bash' | 'python' | 'node' | 'gemini'>('bash');
-  const [pythonContext, setPythonContext] = useState<Record<string, any>>({});
-
   // Global npm packages (e.g., @google/gemini-cli)
   const [globalPackages, setGlobalPackages] = useState<Record<string, string>>(() => {
     try {
@@ -308,33 +642,10 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
     };
   });
 
-  // Nano Interactive Mode
-  const [nanoState, setNanoState] = useState<{
-    isOpen: boolean;
-    fileName: string;
-    initialContent: string;
-  }>({
-    isOpen: false,
-    fileName: '',
-    initialContent: '',
-  });
-
-  const [lines, setLines] = useState<TerminalLine[]>([
-    {
-      id: 'init-1',
-      type: 'info',
-      text: 'Linux sandbox-cloud 6.6.0-x86_64 GNU/Linux (Ubuntu 24.04 LTS)',
-    },
-    {
-      id: 'init-2',
-      type: 'info',
-      text: 'Gemini Live IDE Extended Linux Terminal Shell (Bash 5.2 / Node.js 22.14 / Python 3.12)',
-    },
-    {
-      id: 'init-3',
-      type: 'output',
-      text: 'Type "help" for a list of Linux commands (cd, pwd, nano, git clone, curl, wget, python3, npm i, mkdir, rm, rn, chmod, cat).',
-    },
+  const [runningProcesses, setRunningProcesses] = useState([
+    { pid: 1204, cmd: 'npm run dev', startTime: 'Oct 08 21:00' },
+    { pid: 3412, cmd: 'vite-plugin-checker', startTime: 'Oct 08 21:05' },
+    { pid: 5590, cmd: 'python3 scripts/monitor.py', startTime: 'Oct 08 21:10' },
   ]);
 
   const [buildLogs, setBuildLogs] = useState<string[]>([
@@ -347,15 +658,15 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
     '✓ built in 420ms',
   ]);
 
-  const terminalEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const terminalEndRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
-    if (isOpen && !nanoState.isOpen) {
-      terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      inputRef.current?.focus();
+    if (isOpen && !activePane.nanoState.isOpen) {
+      terminalEndRefs.current[activePaneId]?.scrollIntoView({ behavior: 'smooth' });
+      inputRefs.current[activePaneId]?.focus();
     }
-  }, [lines, isOpen, activeTab, nanoState.isOpen, replMode]);
+  }, [panes, isOpen, activeTab, activePaneId, activePane.nanoState.isOpen, activePane.replMode]);
 
   // Compute full virtual Linux path
   const getFullUnixPath = (dir: string): string => {
@@ -366,11 +677,11 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
     return '/home/developer/project';
   };
 
-  const getPromptPrefix = () => {
-    if (replMode === 'python') return '>>> ';
-    if (replMode === 'node') return '> ';
-    if (replMode === 'gemini') return 'gemini> ';
-    return `developer@sandbox:${currentDir}$ `;
+  const getPromptPrefix = (dir: string = activePane.currentDir, mode: string = activePane.replMode) => {
+    if (mode === 'python') return '>>> ';
+    if (mode === 'node') return '> ';
+    if (mode === 'gemini') return 'gemini> ';
+    return `developer@sandbox:${dir}$ `;
   };
 
   // Helper to upsert file in IDE workspace
@@ -384,7 +695,13 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
       } else if (onAddFile) {
         const ext = fileName.split('.').pop()?.toLowerCase();
         const lang: ProjectFile['language'] =
-          ext === 'html'
+          ext === 'ts' || ext === 'tsx'
+            ? 'typescript'
+            : ext === 'sql'
+            ? 'sql'
+            : ext === 'yaml' || ext === 'yml'
+            ? 'yaml'
+            : ext === 'html'
             ? 'html'
             : ext === 'css'
             ? 'css'
@@ -431,26 +748,31 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
       setBuildStatus('success');
       setLastBuildTime(elapsed);
 
-      setLines(prev => [
-        ...prev,
-        {
-          id: Math.random().toString(),
-          type: 'success',
-          text: `✓ Build completed successfully in ${elapsed} (All ${files.length} files bundled).`,
-        },
-      ]);
+      setPanes(prev => prev.map(p => ({
+        ...p,
+        lines: [
+          ...p.lines,
+          {
+            id: Math.random().toString(),
+            type: 'success',
+            text: `✓ Build completed successfully in ${elapsed} (All ${files.length} files bundled).`,
+          }
+        ]
+      })));
     }, 600);
   };
 
   // Execute Command Line Handler
-  const executeCommand = async (cmd: string) => {
+  const executeCommand = async (cmd: string, paneId: string = activePaneId) => {
     const trimmed = cmd.trim();
     if (!trimmed) return;
+
+    const pane = panes.find(p => p.id === paneId) || activePane;
 
     // Add to persistent command history
     appendHistory(trimmed);
 
-    const promptText = getPromptPrefix();
+    const promptText = getPromptPrefix(pane.currentDir, pane.replMode);
     const userLine: TerminalLine = {
       id: Math.random().toString(),
       type: 'input',
@@ -459,25 +781,30 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
     };
 
     // Sub-REPL Modes
-    if (replMode === 'python') {
+    if (pane.replMode === 'python') {
       if (trimmed === 'exit()' || trimmed === 'quit()' || trimmed === 'exit' || trimmed === 'quit') {
-        setReplMode('bash');
-        setLines(prev => [
-          ...prev,
-          userLine,
-          {
-            id: Math.random().toString(),
-            type: 'info',
-            text: 'Exited Python 3 REPL. Returned to bash.',
-          },
-        ]);
-        setInputVal('');
+        updatePane(paneId, {
+          replMode: 'bash',
+          lines: [
+            ...pane.lines,
+            userLine,
+            {
+              id: Math.random().toString(),
+              type: 'info',
+              text: 'Exited Python 3 REPL. Returned to bash.',
+            },
+          ],
+          inputVal: ''
+        });
         return;
       }
 
-      const res = executePythonCode(trimmed, pythonContext);
-      setPythonContext(res.updatedVars);
+      if (trimmed === 'clear' || trimmed === 'clear()' || trimmed === 'cls') {
+        updatePane(paneId, { lines: [], inputVal: '' });
+        return;
+      }
 
+      const res = executePythonCode(trimmed, pane.pythonContext);
       const outLines: TerminalLine[] = [];
       if (res.outputs.length > 0) {
         outLines.push({
@@ -494,24 +821,34 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
         });
       }
 
-      setLines(prev => [...prev, userLine, ...outLines]);
-      setInputVal('');
+      updatePane(paneId, {
+        pythonContext: res.updatedVars,
+        lines: [...pane.lines, userLine, ...outLines],
+        inputVal: ''
+      });
       return;
     }
 
-    if (replMode === 'node') {
+    if (pane.replMode === 'node') {
       if (trimmed === '.exit' || trimmed === 'exit' || trimmed === 'exit()') {
-        setReplMode('bash');
-        setLines(prev => [
-          ...prev,
-          userLine,
-          {
-            id: Math.random().toString(),
-            type: 'info',
-            text: 'Exited Node.js REPL. Returned to bash.',
-          },
-        ]);
-        setInputVal('');
+        updatePane(paneId, {
+          replMode: 'bash',
+          lines: [
+            ...pane.lines,
+            userLine,
+            {
+              id: Math.random().toString(),
+              type: 'info',
+              text: 'Exited Node.js REPL. Returned to bash.',
+            },
+          ],
+          inputVal: ''
+        });
+        return;
+      }
+
+      if (trimmed === 'clear' || trimmed === 'clear()' || trimmed === 'cls') {
+        updatePane(paneId, { lines: [], inputVal: '' });
         return;
       }
 
@@ -532,37 +869,43 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
         });
       }
 
-      setLines(prev => [...prev, userLine, ...outLines]);
-      setInputVal('');
+      updatePane(paneId, {
+        lines: [...pane.lines, userLine, ...outLines],
+        inputVal: ''
+      });
       return;
     }
 
-    if (replMode === 'gemini') {
+    if (pane.replMode === 'gemini') {
       if (trimmed === 'exit' || trimmed === 'quit' || trimmed === ':q') {
-        setReplMode('bash');
-        setLines(prev => [
-          ...prev,
+        updatePane(paneId, {
+          replMode: 'bash',
+          lines: [
+            ...pane.lines,
+            userLine,
+            {
+              id: Math.random().toString(),
+              type: 'info',
+              text: 'Exited Gemini CLI session. Returned to bash.',
+            },
+          ],
+          inputVal: ''
+        });
+        return;
+      }
+
+      updatePane(paneId, {
+        lines: [
+          ...pane.lines,
           userLine,
           {
             id: Math.random().toString(),
             type: 'info',
-            text: 'Exited Gemini CLI session. Returned to bash.',
+            text: '⠋ Querying Google Gemini Developer CLI...',
           },
-        ]);
-        setInputVal('');
-        return;
-      }
-
-      setLines(prev => [
-        ...prev,
-        userLine,
-        {
-          id: Math.random().toString(),
-          type: 'info',
-          text: '⠋ Querying Google Gemini Developer CLI...',
-        },
-      ]);
-      setInputVal('');
+        ],
+        inputVal: ''
+      });
 
       try {
         const response = await fetch('/api/gemini-cli', {
@@ -577,1327 +920,790 @@ export const IntegratedTerminal: React.FC<IntegratedTerminalProps> = ({
         const data = await response.json();
         const cliText = data.text || 'Command completed with no output.';
 
-        setLines(prev => [
-          ...prev.filter(l => !l.text.includes('⠋ Querying Google Gemini Developer CLI...')),
-          {
-            id: Math.random().toString(),
-            type: 'output',
-            text: cliText,
-          },
-        ]);
+        setPanes(prev => prev.map(p => p.id === paneId ? {
+          ...p,
+          lines: [
+            ...p.lines.filter(l => !l.text.includes('⠋ Querying Google Gemini Developer CLI...')),
+            {
+              id: Math.random().toString(),
+              type: 'output',
+              text: cliText,
+            },
+          ]
+        } : p));
       } catch (err: any) {
-        setLines(prev => [
-          ...prev.filter(l => !l.text.includes('⠋ Querying Google Gemini Developer CLI...')),
-          {
-            id: Math.random().toString(),
-            type: 'error',
-            text: `gemini-cli error: ${err?.message || 'Failed to communicate with Gemini API'}`,
-          },
-        ]);
+        setPanes(prev => prev.map(p => p.id === paneId ? {
+          ...p,
+          lines: [
+            ...p.lines.filter(l => !l.text.includes('⠋ Querying Google Gemini Developer CLI...')),
+            {
+              id: Math.random().toString(),
+              type: 'error',
+              text: `Gemini CLI Error: ${err.message}`,
+            },
+          ]
+        } : p));
       }
       return;
     }
 
-    // Standard Bash Execution
-    const parts = trimmed.split(' ');
-    const command = parts[0].toLowerCase();
-    const args = parts.slice(1);
+    // Bash Shell Logic (Standard Execution)
+    const args = trimmed.split(/\s+/);
+    const command = args[0].toLowerCase();
     const outputLines: TerminalLine[] = [];
 
     switch (command) {
-      // 1. PWD (Print Working Directory)
-      case 'pwd':
+      case 'clear':
+      case 'cls':
+        updatePane(paneId, { lines: [], inputVal: '' });
+        return;
+
+      case 'help':
         outputLines.push({
           id: Math.random().toString(),
-          type: 'output',
-          text: getFullUnixPath(currentDir),
+          type: 'info',
+          text: `
+Available commands:
+  ls [-la]       - List files in current directory
+  cd <dir>       - Change directory
+  pwd            - Print working directory
+  mkdir <dir>    - Create a new directory
+  touch <file>   - Create an empty file
+  rm <file/dir>  - Remove a file or directory
+  cat <file>     - Print file contents
+  nano <file>    - Open terminal text editor
+  npm i <pkg>    - Mock install npm packages
+  python3        - Start Python 3.12 REPL
+  node           - Start Node.js v22 REPL
+  gemini <query> - One-off query to Gemini CLI
+  gemini chat    - Start interactive Gemini CLI session
+  git <command>  - Basic git operations (clone, status, log)
+  chmod <mode>   - Change file permissions (e.g. chmod +x app.js)
+  ps             - List running processes
+  kill <pid>     - Terminate a running process
+  history [-c]   - Show or clear command history
+  clear | cls    - Wipe the terminal output buffer
+  help           - Show this manual
+
+Keyboard Shortcuts:
+  Up / Down      - Scroll through command history
+  Ctrl+L         - Clear terminal screen
+  Ctrl+C         - Interrupt process / Exit REPL
+  ESC            - Exit nano editor (inside nano)
+  Ctrl+S         - Save file (inside nano)
+`,
         });
         break;
 
-      // 2. CD (Change Directory)
-      case 'cd': {
-        const target = args[0];
+      case 'history':
+        if (args[1] === '-c') {
+          setHistory([]);
+          localStorage.removeItem(TERMINAL_HISTORY_STORAGE_KEY);
+          outputLines.push({ id: Math.random().toString(), type: 'success', text: 'Command history cleared.' });
+        } else {
+          outputLines.push({
+            id: Math.random().toString(),
+            type: 'output',
+            text: history.map((h, i) => `  ${i + 1}  ${h}`).join('\n'),
+          });
+        }
+        break;
+
+      case 'pwd':
+        outputLines.push({ id: Math.random().toString(), type: 'output', text: getFullUnixPath(pane.currentDir) });
+        break;
+
+      case 'ps':
+        outputLines.push({
+          id: Math.random().toString(),
+          type: 'output',
+          text: `  PID TTY          TIME CMD\n${runningProcesses.map(p => ` ${p.pid} pts/0    00:00:01 ${p.cmd}`).join('\n')}`
+        });
+        break;
+
+      case 'kill':
+        const pidStr = args[1];
+        if (!pidStr) {
+          outputLines.push({ id: Math.random().toString(), type: 'error', text: 'kill: usage: kill <pid>' });
+        } else {
+          const pid = parseInt(pidStr);
+          const process = runningProcesses.find(p => p.pid === pid);
+          if (process) {
+            setRunningProcesses(prev => prev.filter(p => p.pid !== pid));
+            outputLines.push({ id: Math.random().toString(), type: 'success', text: `Terminated process ${pid} (${process.cmd})` });
+          } else {
+            outputLines.push({ id: Math.random().toString(), type: 'error', text: `kill: (${pid}) - No such process` });
+          }
+        }
+        break;
+
+      case 'ls':
+        const isLong = args.includes('-la') || args.includes('-l');
+        const listFiles = files.filter(f => {
+          if (pane.currentDir === '~' || pane.currentDir === '~/project') return !f.name.includes('/');
+          const relativePath = pane.currentDir.replace('~/project/', '');
+          return f.name.startsWith(relativePath + '/') && !f.name.replace(relativePath + '/', '').includes('/');
+        });
+
+        const listDirs = Array.from(virtualDirs).filter(d => {
+          if (pane.currentDir === '~/project' || pane.currentDir === '~') return !d.includes('/');
+          return d.startsWith(pane.currentDir.replace('~/project/', '') + '/');
+        });
+
+        if (isLong) {
+          const rows = [
+            `total ${listFiles.length + listDirs.length}`,
+            ...listDirs.map(d => `drwxr-xr-x 2 developer developer 4096 Oct  8 22:15 ${d}`),
+            ...listFiles.map(f => {
+              const permStr = (f.name.endsWith('.js') || f.name.endsWith('.sh')) ? '-rwxr-xr-x' : '-rw-r--r--';
+              return `${permStr} 1 developer developer ${f.content.length} Oct  8 22:15 ${f.name}`;
+            }),
+          ];
+          outputLines.push({ id: Math.random().toString(), type: 'output', text: rows.join('\n') });
+        } else {
+          const names = [...listDirs, ...listFiles.map(f => f.name.split('/').pop() || f.name)];
+          outputLines.push({ id: Math.random().toString(), type: 'output', text: names.join('  ') });
+        }
+        break;
+
+      case 'cd':
+        const target = args[1];
         if (!target || target === '~' || target === '~/project') {
-          setCurrentDir('~/project');
-        } else if (target === '/') {
-          setCurrentDir('/');
+          updatePane(paneId, { currentDir: '~/project', lines: [...pane.lines, userLine], inputVal: '' });
+          return;
         } else if (target === '..') {
-          if (currentDir.startsWith('~/project/')) {
-            setCurrentDir('~/project');
-          } else if (currentDir === '~/project') {
-            setCurrentDir('~');
-          } else if (currentDir === '~') {
-            setCurrentDir('/');
-          }
-        } else if (target === '.' || target === './') {
-          // Stay in current dir
-        } else {
-          // Check if target directory exists in virtualDirs or project files prefix
-          const cleanTarget = target.replace(/^\.\//, '').replace(/\/$/, '');
-          const exists =
-            virtualDirs.has(cleanTarget) ||
-            files.some(f => f.name.toLowerCase().startsWith(cleanTarget.toLowerCase() + '/'));
-
-          if (exists) {
-            setCurrentDir(
-              currentDir === '/'
-                ? `/${cleanTarget}`
-                : `${currentDir}/${cleanTarget}`
-            );
+          const parts = pane.currentDir.split('/');
+          if (parts.length > 2) {
+            updatePane(paneId, { currentDir: parts.slice(0, -1).join('/'), lines: [...pane.lines, userLine], inputVal: '' });
           } else {
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'error',
-              text: `bash: cd: ${target}: No such file or directory`,
-            });
+            updatePane(paneId, { currentDir: '~/project', lines: [...pane.lines, userLine], inputVal: '' });
+          }
+          return;
+        } else {
+          const dirExists = Array.from(virtualDirs).some(d => d.toLowerCase() === target.toLowerCase() || (pane.currentDir.replace('~/project/', '') + '/' + target).toLowerCase() === d.toLowerCase());
+          if (dirExists) {
+            const newPath = target.startsWith('/') ? target : (pane.currentDir === '~/project' ? `~/project/${target}` : `${pane.currentDir}/${target}`);
+            updatePane(paneId, { currentDir: newPath, lines: [...pane.lines, userLine], inputVal: '' });
+            return;
+          } else {
+            outputLines.push({ id: Math.random().toString(), type: 'error', text: `cd: no such file or directory: ${target}` });
           }
         }
         break;
-      }
 
-      // 3. MKDIR (Make Directory)
-      case 'mkdir': {
-        if (!args[0]) {
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'error',
-            text: 'mkdir: missing operand\nTry \'mkdir --help\' for more information.',
-          });
+      case 'mkdir':
+        const newDir = args[1];
+        if (!newDir) {
+          outputLines.push({ id: Math.random().toString(), type: 'error', text: 'mkdir: missing operand' });
         } else {
-          const isRecursive = args[0] === '-p';
-          const dirName = isRecursive ? args[1] : args[0];
-          if (!dirName) {
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'error',
-              text: 'mkdir: missing operand after -p',
-            });
-          } else {
-            const clean = dirName.replace(/\/$/, '');
-            setVirtualDirs(prev => new Set([...prev, clean]));
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'success',
-              text: `mkdir: created directory '${clean}'`,
-            });
-          }
+          setVirtualDirs(prev => new Set([...Array.from(prev), newDir]));
+          outputLines.push({ id: Math.random().toString(), type: 'success', text: `Directory '${newDir}' created.` });
         }
         break;
-      }
 
-      // 4. RMDIR (Remove Empty Directory)
-      case 'rmdir': {
-        const targetDir = args[0];
-        if (!targetDir) {
+      case 'touch':
+        const newFile = args[1];
+        if (!newFile) {
+          outputLines.push({ id: Math.random().toString(), type: 'error', text: 'touch: missing file operand' });
+        } else {
+          handleUpsertWorkspaceFile(newFile, '');
+          outputLines.push({ id: Math.random().toString(), type: 'success', text: `File '${newFile}' created.` });
+        }
+        break;
+
+      case 'cat':
+        const catFile = args[1];
+        const fileObj = files.find(f => f.name.toLowerCase() === catFile?.toLowerCase());
+        if (fileObj) {
+          outputLines.push({ id: Math.random().toString(), type: 'output', text: fileObj.content });
+        } else {
+          outputLines.push({ id: Math.random().toString(), type: 'error', text: `cat: ${catFile}: No such file or directory` });
+        }
+        break;
+
+      case 'edit':
+      case 'nano':
+        const nanoFile = args[1];
+        if (!nanoFile) {
+          outputLines.push({ id: Math.random().toString(), type: 'error', text: 'nano: missing file operand' });
+        } else {
+          const existing = files.find(f => f.name.toLowerCase() === nanoFile.toLowerCase());
+          updatePane(paneId, {
+            nanoState: {
+              isOpen: true,
+              fileName: nanoFile,
+              initialContent: existing ? existing.content : '',
+            },
+            lines: [...pane.lines, userLine],
+            inputVal: ''
+          });
+          return;
+        }
+        break;
+
+      case 'python3':
+      case 'python':
+        updatePane(paneId, {
+          replMode: 'python',
+          lines: [
+            ...pane.lines,
+            userLine,
+            {
+              id: Math.random().toString(),
+              type: 'info',
+              text: 'Python 3.12.2 (main, Oct  8 2024, 22:15:00)\nType "help", "copyright", "credits" or "license" for more information.',
+            },
+          ],
+          inputVal: ''
+        });
+        return;
+
+      case 'node':
+        updatePane(paneId, {
+          replMode: 'node',
+          lines: [
+            ...pane.lines,
+            userLine,
+            {
+              id: Math.random().toString(),
+              type: 'info',
+              text: 'Welcome to Node.js v22.14.0.\nType ".help" for more information.',
+            },
+          ],
+          inputVal: ''
+        });
+        return;
+
+      case 'gemini':
+        if (args[1] === 'chat') {
+          updatePane(paneId, {
+            replMode: 'gemini',
+            lines: [
+              ...pane.lines,
+              userLine,
+              {
+                id: Math.random().toString(),
+                type: 'info',
+                text: 'Connected to Google Gemini Developer CLI (interactive mode).\nType your prompt and press Enter. Type "exit" to quit.',
+              },
+            ],
+            inputVal: ''
+          });
+          return;
+        }
+
+        const query = args.slice(1).join(' ');
+        if (!query) {
+          outputLines.push({ id: Math.random().toString(), type: 'info', text: 'Google Gemini Developer CLI v1.4.2\nUsage: gemini <prompt> | gemini chat | gemini review' });
+        } else {
+          updatePane(paneId, {
+            lines: [
+              ...pane.lines,
+              userLine,
+              {
+                id: Math.random().toString(),
+                type: 'info',
+                text: '⠋ Querying Google Gemini Developer CLI...',
+              },
+            ],
+            inputVal: ''
+          });
+          try {
+            const resp = await fetch('/api/gemini-cli', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ prompt: query, files: files.map(f => ({ name: f.name, content: f.content })) }),
+            });
+            const d = await resp.json();
+            setPanes(prev => prev.map(p => p.id === paneId ? {
+              ...p,
+              lines: [
+                ...p.lines.filter(l => !l.text.includes('⠋ Querying Google Gemini Developer CLI...')),
+                {
+                  id: Math.random().toString(),
+                  type: 'output',
+                  text: d.text || 'Done.',
+                },
+              ]
+            } : p));
+          } catch (e: any) {
+            setPanes(prev => prev.map(p => p.id === paneId ? {
+              ...p,
+              lines: [
+                ...p.lines.filter(l => !l.text.includes('⠋ Querying Google Gemini Developer CLI...')),
+                {
+                  id: Math.random().toString(),
+                  type: 'error',
+                  text: `Error: ${e.message}`,
+                },
+              ]
+            } : p));
+          }
+          return;
+        }
+        break;
+
+      case 'npm': {
+        const subCmd = (args[1] || '').toLowerCase();
+        if (!subCmd || subCmd === 'help' || subCmd === '--help' || subCmd === '-h') {
           outputLines.push({
             id: Math.random().toString(),
-            type: 'error',
-            text: 'rmdir: missing operand',
+            type: 'info',
+            text: `npm <command>\n\nUsage:\n  npm install [-g] [<pkg>]     install packages locally or globally\n  npm run <script>             run arbitrary package scripts (dev, build, test)\n  npm start                    run project development server\n  npm test                     run test suite\n  npm list [-g]                list installed dependencies\n  npm -v, --version            show npm CLI version`,
           });
-        } else {
-          const clean = targetDir.replace(/\/$/, '');
-          const hasFiles = files.some(f => f.name.startsWith(clean + '/'));
-          if (hasFiles) {
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'error',
-              text: `rmdir: failed to remove '${clean}': Directory not empty (use 'rm -rf ${clean}')`,
-            });
-          } else if (virtualDirs.has(clean)) {
-            setVirtualDirs(prev => {
-              const updated = new Set(prev);
-              updated.delete(clean);
+        } else if (subCmd === '-v' || subCmd === '--version' || subCmd === 'version') {
+          outputLines.push({
+            id: Math.random().toString(),
+            type: 'output',
+            text: '10.8.2',
+          });
+        } else if (subCmd === 'i' || subCmd === 'install' || subCmd === 'add') {
+          const isGlobal = args.includes('-g') || args.includes('--global');
+          const pkgs = args.slice(2).filter(a => !a.startsWith('-'));
+
+          if (isGlobal) {
+            const targetPkg = pkgs[0] || '@google/gemini-cli';
+            setGlobalPackages(prev => {
+              const updated = { ...prev, [targetPkg]: '1.4.2' };
+              try {
+                localStorage.setItem(TERMINAL_GLOBAL_PKGS_STORAGE_KEY, JSON.stringify(updated));
+              } catch {}
               return updated;
             });
             outputLines.push({
               id: Math.random().toString(),
-              type: 'output',
-              text: `removed directory '${clean}'`,
+              type: 'success',
+              text: `added 1 package, and audited 14 packages in 1.12s\n\n+ ${targetPkg}@1.4.2\n\n1 package is looking for funding\n  run \`npm fund\` for details\n\nfound 0 vulnerabilities\nGlobal binary linked: /usr/local/bin/${targetPkg.split('/').pop()} -> ~/.npm-global/bin/${targetPkg.split('/').pop()}`,
+            });
+          } else if (pkgs.length === 0) {
+            outputLines.push({
+              id: Math.random().toString(),
+              type: 'success',
+              text: `audited 48 packages in 320ms\nfound 0 vulnerabilities\nEverything up to date.`,
+            });
+          } else {
+            // Local package installation
+            const pkgNames = pkgs.join(' ');
+            const pkgJson = files.find(f => f.name.toLowerCase() === 'package.json');
+            if (pkgJson) {
+              try {
+                const parsed = JSON.parse(pkgJson.content);
+                if (!parsed.dependencies) parsed.dependencies = {};
+                pkgs.forEach(p => { parsed.dependencies[p] = '^1.0.0'; });
+                handleUpsertWorkspaceFile('package.json', JSON.stringify(parsed, null, 2) + '\n');
+              } catch {}
+            }
+            outputLines.push({
+              id: Math.random().toString(),
+              type: 'success',
+              text: `added ${pkgs.length} package${pkgs.length > 1 ? 's' : ''} in 780ms\n+ ${pkgNames}@latest\nfound 0 vulnerabilities\nWorkspace package.json synced.`,
+            });
+          }
+        } else if (subCmd === 'run') {
+          const script = args[2];
+          if (!script) {
+            outputLines.push({
+              id: Math.random().toString(),
+              type: 'info',
+              text: 'Scripts available in project:\n  dev: vite\n  build: vite build\n  test: vitest run\n  lint: eslint src/',
+            });
+          } else if (script === 'build') {
+            runBuildCommand();
+            return;
+          } else if (script === 'dev' || script === 'start') {
+            outputLines.push({
+              id: Math.random().toString(),
+              type: 'info',
+              text: `> ${projectName.toLowerCase().replace(/\\s+/g, '-')}@0.1.0 dev\n> vite --port 3000\n\n  VITE v8.3.0  ready in 184 ms\n\n  ➜  Local:   http://localhost:3000/\n  ➜  Network: use --host to expose`,
+            });
+          } else if (script === 'test') {
+            outputLines.push({
+              id: Math.random().toString(),
+              type: 'success',
+              text: `> ${projectName.toLowerCase().replace(/\\s+/g, '-')}@0.1.0 test\n> vitest run\n\n ✓ src/utils/codeFormatter.test.ts (4 tests)\n ✓ src/components/Editor.test.tsx (3 tests)\n\n Test Files  2 passed (2)\n      Tests  7 passed (7)\n   Duration  342ms`,
             });
           } else {
             outputLines.push({
               id: Math.random().toString(),
-              type: 'error',
-              text: `rmdir: failed to remove '${clean}': No such file or directory`,
-            });
-          }
-        }
-        break;
-      }
-
-      // 5. RM (Remove File or Directory)
-      case 'rm': {
-        if (!args[0]) {
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'error',
-            text: 'rm: missing operand\nUsage: rm <filename> or rm -rf <directory>',
-          });
-          break;
-        }
-
-        const isRecursive = args.includes('-r') || args.includes('-rf') || args.includes('-f');
-        const target = args.find(a => !a.startsWith('-')) || '';
-
-        if (!target) {
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'error',
-            text: 'rm: missing file or directory name',
-          });
-          break;
-        }
-
-        // Check if file exists
-        const fileMatch = files.find(f => f.name.toLowerCase() === target.toLowerCase());
-        if (fileMatch) {
-          if (onDeleteFile) {
-            onDeleteFile(fileMatch.id);
-          }
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'output',
-            text: `removed '${fileMatch.name}'`,
-          });
-          break;
-        }
-
-        // Check if directory
-        if (virtualDirs.has(target)) {
-          if (!isRecursive) {
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'error',
-              text: `rm: cannot remove '${target}': Is a directory (use -r to remove)`,
-            });
-          } else {
-            // Remove dir and any files inside
-            setVirtualDirs(prev => {
-              const next = new Set(prev);
-              next.delete(target);
-              return next;
-            });
-            files.forEach(f => {
-              if (f.name.startsWith(target + '/')) {
-                onDeleteFile?.(f.id);
-              }
-            });
-            outputLines.push({
-              id: Math.random().toString(),
               type: 'output',
-              text: `removed directory '${target}' and its contents`,
+              text: `> ${projectName.toLowerCase().replace(/\\s+/g, '-')}@0.1.0 ${script}\nExecuted script '${script}' successfully.`,
             });
           }
-          break;
-        }
-
-        outputLines.push({
-          id: Math.random().toString(),
-          type: 'error',
-          text: `rm: cannot remove '${target}': No such file or directory`,
-        });
-        break;
-      }
-
-      // 6. RN, RENAME, MV (Rename or Move)
-      case 'rn':
-      case 'rename':
-      case 'mv': {
-        const oldName = args[0];
-        const newName = args[1];
-
-        if (!oldName || !newName) {
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'error',
-            text: `Usage: ${command} <old_name> <new_name>`,
-          });
-          break;
-        }
-
-        const targetFile = files.find(f => f.name.toLowerCase() === oldName.toLowerCase());
-        if (targetFile) {
-          if (onRenameFile) {
-            onRenameFile(targetFile.id, newName);
-          }
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'success',
-            text: `renamed '${targetFile.name}' -> '${newName}'`,
-          });
-        } else if (virtualDirs.has(oldName)) {
-          setVirtualDirs(prev => {
-            const next = new Set(prev);
-            next.delete(oldName);
-            next.add(newName);
-            return next;
-          });
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'success',
-            text: `renamed directory '${oldName}' -> '${newName}'`,
-          });
-        } else {
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'error',
-            text: `${command}: cannot stat '${oldName}': No such file or directory`,
-          });
-        }
-        break;
-      }
-
-      // 7. NANO (In-Terminal GNU Nano Text Editor)
-      case 'nano': {
-        const targetFilename = args[0] || 'scratch.txt';
-        const existing = files.find(f => f.name.toLowerCase() === targetFilename.toLowerCase());
-        const initialContent = existing
-          ? existing.content
-          : targetFilename.endsWith('.html')
-          ? '<!DOCTYPE html>\n<html>\n<head>\n  <title>New Page</title>\n</head>\n<body>\n  <h1>Created with GNU nano</h1>\n</body>\n</html>'
-          : targetFilename.endsWith('.py')
-          ? '#!/usr/bin/env python3\nprint("Hello from Python 3!")\n'
-          : targetFilename.endsWith('.js')
-          ? '// JavaScript module\nconsole.log("Ready");\n'
-          : '';
-
-        setNanoState({
-          isOpen: true,
-          fileName: targetFilename,
-          initialContent,
-        });
-
-        outputLines.push({
-          id: Math.random().toString(),
-          type: 'info',
-          text: `[ Opening GNU nano 7.2 for file '${targetFilename}' ]`,
-        });
-        break;
-      }
-
-      // 8. CHMOD (Change File Permissions)
-      case 'chmod': {
-        const modeArg = args[0];
-        const target = args[1];
-
-        if (!modeArg || !target) {
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'error',
-            text: 'Usage: chmod <mode> <file>\nExample: chmod 755 run.sh or chmod +x script.js',
-          });
-          break;
-        }
-
-        const fileExists = files.some(f => f.name.toLowerCase() === target.toLowerCase()) || virtualDirs.has(target);
-        if (!fileExists) {
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'error',
-            text: `chmod: cannot access '${target}': No such file or directory`,
-          });
-          break;
-        }
-
-        let newMode = 0o644;
-        if (/^[0-7]{3,4}$/.test(modeArg)) {
-          newMode = parseInt(modeArg, 8);
-        } else if (modeArg === '+x') {
-          newMode = (filePermissions[target] || 0o644) | 0o111;
-        } else if (modeArg === '-x') {
-          newMode = (filePermissions[target] || 0o644) & ~0o111;
-        } else if (modeArg === '+w') {
-          newMode = (filePermissions[target] || 0o644) | 0o222;
-        } else if (modeArg === '-w') {
-          newMode = (filePermissions[target] || 0o644) & ~0o222;
-        }
-
-        setFilePermissions(prev => ({
-          ...prev,
-          [target]: newMode,
-        }));
-
-        outputLines.push({
-          id: Math.random().toString(),
-          type: 'success',
-          text: `mode of '${target}' changed to 0${newMode.toString(8)} (${modeToPermissions(newMode)})`,
-        });
-        break;
-      }
-
-      // 9. GIT CLONE (Clone Git Repositories)
-      case 'git': {
-        const sub = args[0];
-        if (sub === 'clone') {
-          const repoUrl = args[1];
-          if (!repoUrl) {
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'error',
-              text: 'fatal: You must specify a repository to clone.\nUsage: git clone <repository_url>',
-            });
-            break;
-          }
-
-          // Extract repo name
-          const repoName = repoUrl.split('/').pop()?.replace(/\.git$/, '') || 'cloned-repo';
+        } else if (subCmd === 'start') {
           outputLines.push({
             id: Math.random().toString(),
             type: 'info',
-            text: `Cloning into '${repoName}'...
-remote: Enumerating objects: 48, done.
-remote: Counting objects: 100% (48/48), done.
-remote: Compressing objects: 100% (32/32), done.
-remote: Total 48 (delta 16), reused 48 (delta 16), pack-reused 0
-Receiving objects: 100% (48/48), 64.20 KiB | 2.85 MiB/s, done.
-Resolving deltas: 100% (16/16), done.`,
+            text: `  VITE v8.3.0  ready in 160 ms\n  ➜  Local:   http://localhost:3000/`,
           });
-
-          // Add cloned files into workspace
-          handleUpsertWorkspaceFile(
-            `${repoName}/README.md`,
-            `# ${repoName}\n\nCloned via Gemini Live IDE Linux Terminal from \`${repoUrl}\`\n\n## Getting Started\n\`\`\`bash\nnpm install\nnpm run dev\n\`\`\`\n`
-          );
-          handleUpsertWorkspaceFile(
-            `${repoName}/index.html`,
-            `<!DOCTYPE html>\n<html>\n<head>\n  <title>${repoName}</title>\n</head>\n<body style="font-family: sans-serif; padding: 2rem;">\n  <h1>${repoName}</h1>\n  <p>Cloned from ${repoUrl}</p>\n</body>\n</html>`
-          );
-          handleUpsertWorkspaceFile(
-            `${repoName}/main.js`,
-            `console.log("Initialized repository ${repoName}");\n`
-          );
-
-          setVirtualDirs(prev => new Set([...prev, repoName]));
-
+        } else if (subCmd === 'test') {
           outputLines.push({
             id: Math.random().toString(),
             type: 'success',
-            text: `✓ Successfully cloned '${repoName}' into workspace. Files added to project.`,
+            text: ` ✓ All test suites passed! (7 tests across 2 files, duration 280ms)`,
           });
-        } else if (sub === 'status') {
+        } else if (subCmd === 'list' || subCmd === 'ls') {
+          const isGlobal = args.includes('-g') || args.includes('--global');
+          if (isGlobal) {
+            const list = Object.entries(globalPackages).map(([k, v]) => `├── ${k}@${v}`).join('\n');
+            outputLines.push({
+              id: Math.random().toString(),
+              type: 'output',
+              text: `/home/developer/.npm-global/lib\n${list}`,
+            });
+          } else {
+            outputLines.push({
+              id: Math.random().toString(),
+              type: 'output',
+              text: `${projectName}@0.1.0 /home/developer/project\n├── @google/genai@2.4.0\n├── lucide-react@0.546.0\n├── prismjs@1.30.0\n├── react@19.0.1\n└── vite@8.3.0`,
+            });
+          }
+        } else {
           outputLines.push({
             id: Math.random().toString(),
             type: 'output',
-            text: `On branch main\nYour branch is up to date with 'origin/main'.\n\nChanges tracked in IDE workspace:\n` +
-              files.map(f => `\tmodified:   ${f.name}`).join('\n') +
-              `\n\nno untracked files. (use "git commit" to record)`,
+            text: `npm: '${subCmd}' completed with code 0.`,
+          });
+        }
+        break;
+      }
+
+      case 'git': {
+        const sub = (args[1] || '').toLowerCase();
+        if (!sub || sub === 'status') {
+          outputLines.push({
+            id: Math.random().toString(),
+            type: 'output',
+            text: `On branch main\nYour branch is up to date with 'origin/main'.\n\nChanges to be committed:\n  (use "git restore --staged <file>..." to unstage)\n\tmodified:   src/App.tsx\n\tmodified:   src/components/Editor/CodeEditor.tsx\n\nno other untracked files present (working tree clean)`,
           });
         } else if (sub === 'log') {
           outputLines.push({
             id: Math.random().toString(),
             type: 'output',
-            text: `commit e4f820c (HEAD -> main)\nAuthor: developer <developer@sandbox.local>\nDate:   ${new Date().toDateString()}\n\n    feat: integrate extended linux terminal engine & nano\n\ncommit 9b2d10a\nDate:   Initial commit`,
+            text: `commit e4f820c (HEAD -> main, origin/main)\nAuthor: developer <dev@gemini.local>\nDate:   ${new Date().toUTCString()}\n\n    feat: real-time multi-user collaboration and syntax support\n\ncommit a1b2c3d\nAuthor: developer <dev@gemini.local>\nDate:   Wed Oct 14 03:38:00 2026\n\n    chore: initialized project workspace with AetherVector template`,
+          });
+        } else if (sub === 'branch') {
+          outputLines.push({
+            id: Math.random().toString(),
+            type: 'output',
+            text: `* main\n  feature/collab-sync\n  staging`,
+          });
+        } else if (sub === 'clone') {
+          const repo = args[2] || 'https://github.com/developer/repo.git';
+          const dirName = repo.split('/').pop()?.replace('.git', '') || 'repo';
+          setVirtualDirs(prev => new Set([...Array.from(prev), dirName]));
+          outputLines.push({
+            id: Math.random().toString(),
+            type: 'success',
+            text: `Cloning into '${dirName}'...\nremote: Enumerating objects: 42, done.\nremote: Total 42 (delta 18), reused 42\nReceiving objects: 100% (42/42), 24.12 KiB | 1.8 MiB/s, done.\nResolving deltas: 100% (18/18), done.`,
+          });
+        } else if (sub === 'diff') {
+          outputLines.push({
+            id: Math.random().toString(),
+            type: 'output',
+            text: `diff --git a/src/components/Editor/CodeEditor.tsx b/src/components/Editor/CodeEditor.tsx\nindex 8f3c1a..b2d9e4 100644\n--- a/src/components/Editor/CodeEditor.tsx\n+++ b/src/components/Editor/CodeEditor.tsx\n+ import 'prismjs/components/prism-typescript';\n+ import 'prismjs/components/prism-sql';\n+ import 'prismjs/components/prism-yaml';`,
+          });
+        } else if (sub === 'add') {
+          outputLines.push({
+            id: Math.random().toString(),
+            type: 'success',
+            text: `Staged changes for commit.`,
+          });
+        } else if (sub === 'commit') {
+          const msgIdx = args.indexOf('-m');
+          const commitMsg = msgIdx !== -1 ? args.slice(msgIdx + 1).join(' ').replace(/['"]/g, '') : 'update workspace files';
+          outputLines.push({
+            id: Math.random().toString(),
+            type: 'success',
+            text: `[main ${Math.random().toString(16).substring(2, 9)}] ${commitMsg}\n 2 files changed, 48 insertions(+), 6 deletions(-)`,
           });
         } else {
           outputLines.push({
             id: Math.random().toString(),
             type: 'output',
-            text: `git ${sub || ''}: executed in virtual repository.`,
+            text: `git: '${sub}' completed.`,
           });
         }
         break;
       }
 
-      // 10. CURL & WGET (HTTP Client & Downloaders)
-      case 'curl': {
-        const urlArg = args.find(a => a.startsWith('http://') || a.startsWith('https://'));
-        const isHeadersOnly = args.includes('-I') || args.includes('-i');
-        const saveToFileIdx = args.indexOf('-o');
-        const saveFilename = saveToFileIdx !== -1 ? args[saveToFileIdx + 1] : null;
-        const saveRemoteName = args.includes('-O');
+      case 'rm': {
+        const isRecursive = args.includes('-rf') || args.includes('-r');
+        const target = args.filter(a => !a.startsWith('-'))[1];
+        if (!target) {
+          outputLines.push({ id: Math.random().toString(), type: 'error', text: 'rm: missing operand' });
+        } else {
+          const fileMatch = files.find(f => f.name.toLowerCase() === target.toLowerCase());
+          if (fileMatch) {
+            onDeleteFile?.(fileMatch.id);
+            outputLines.push({ id: Math.random().toString(), type: 'success', text: `Removed file '${target}'.` });
+          } else if (virtualDirs.has(target)) {
+            if (isRecursive) {
+              setVirtualDirs(prev => {
+                const next = new Set(prev);
+                next.delete(target);
+                return next;
+              });
+              outputLines.push({ id: Math.random().toString(), type: 'success', text: `Removed directory '${target}'.` });
+            } else {
+              outputLines.push({ id: Math.random().toString(), type: 'error', text: `rm: cannot remove '${target}': Is a directory (use -r)` });
+            }
+          } else {
+            outputLines.push({ id: Math.random().toString(), type: 'error', text: `rm: cannot remove '${target}': No such file or directory` });
+          }
+        }
+        break;
+      }
 
-        if (!urlArg) {
+      case 'mv':
+      case 'rn': {
+        const srcName = args[1];
+        const destName = args[2];
+        if (!srcName || !destName) {
+          outputLines.push({ id: Math.random().toString(), type: 'error', text: `${command}: missing file operands. Usage: ${command} <old> <new>` });
+        } else {
+          const fileMatch = files.find(f => f.name.toLowerCase() === srcName.toLowerCase());
+          if (fileMatch) {
+            onRenameFile?.(fileMatch.id, destName);
+            outputLines.push({ id: Math.random().toString(), type: 'success', text: `Renamed '${srcName}' -> '${destName}'.` });
+          } else {
+            outputLines.push({ id: Math.random().toString(), type: 'error', text: `${command}: cannot stat '${srcName}': No such file or directory` });
+          }
+        }
+        break;
+      }
+
+      case 'chmod': {
+        const mode = args[1];
+        const fileTarget = args[2];
+        if (!mode || !fileTarget) {
+          outputLines.push({ id: Math.random().toString(), type: 'error', text: 'chmod: missing operand. Usage: chmod <mode> <file>' });
+        } else {
+          outputLines.push({ id: Math.random().toString(), type: 'success', text: `Changed permissions of '${fileTarget}' to ${mode}.` });
+        }
+        break;
+      }
+
+      case 'curl': {
+        const isHeaderOnly = args.includes('-I') || args.includes('-i');
+        const url = args.find(a => a.startsWith('http://') || a.startsWith('https://')) || args[1];
+        if (!url) {
+          outputLines.push({ id: Math.random().toString(), type: 'error', text: 'curl: try \'curl --help\' for more information' });
+        } else if (isHeaderOnly) {
           outputLines.push({
             id: Math.random().toString(),
-            type: 'error',
-            text: 'curl: try \'curl --help\' for more information\nUsage: curl [options] <url>',
+            type: 'output',
+            text: `HTTP/2 200 OK\nserver: nginx/1.24.0 (Ubuntu)\ndate: ${new Date().toUTCString()}\ncontent-type: text/html; charset=UTF-8\ncontent-length: 1480\nstrict-transport-security: max-age=31536000\naccess-control-allow-origin: *`,
           });
-          break;
-        }
-
-        outputLines.push({
-          id: Math.random().toString(),
-          type: 'info',
-          text: `[curl] Connecting to ${urlArg}...`,
-        });
-
-        try {
-          const res = await fetch(urlArg, { method: isHeadersOnly ? 'HEAD' : 'GET' });
-          if (isHeadersOnly) {
-            const headerLines = [`HTTP/1.1 ${res.status} ${res.statusText}`];
-            res.headers.forEach((val, key) => {
-              headerLines.push(`${key}: ${val}`);
-            });
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'output',
-              text: headerLines.join('\n'),
-            });
-          } else {
-            const body = await res.text();
-            if (saveFilename || saveRemoteName) {
-              const targetName = saveFilename || urlArg.split('/').pop()?.split('?')[0] || 'downloaded_file.txt';
-              handleUpsertWorkspaceFile(targetName, body);
-              outputLines.push({
-                id: Math.random().toString(),
-                type: 'success',
-                text: `✓ Saved ${body.length} bytes to '${targetName}' in workspace.`,
-              });
-            } else {
-              // Pretty print if JSON
-              try {
-                const parsed = JSON.parse(body);
-                outputLines.push({
-                  id: Math.random().toString(),
-                  type: 'output',
-                  text: JSON.stringify(parsed, null, 2).slice(0, 3000),
-                });
-              } catch {
-                outputLines.push({
-                  id: Math.random().toString(),
-                  type: 'output',
-                  text: body.slice(0, 3000) + (body.length > 3000 ? '\n... [output truncated]' : ''),
-                });
-              }
-            }
-          }
-        } catch (fetchErr: any) {
-          // Fallback simulation for CORS-restricted endpoints
-          const simulatedHeaders = [
-            `HTTP/2 200 OK`,
-            `date: ${new Date().toUTCString()}`,
-            `content-type: application/json; charset=utf-8`,
-            `server: cloudflare`,
-            `content-length: 412`,
-            `access-control-allow-origin: *`,
-          ];
-          if (isHeadersOnly) {
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'output',
-              text: simulatedHeaders.join('\n'),
-            });
-          } else {
-            const targetName = saveFilename || (saveRemoteName ? urlArg.split('/').pop()?.split('?')[0] || 'response.json' : null);
-            const mockData = `{\n  "status": "success",\n  "url": "${urlArg}",\n  "timestamp": "${new Date().toISOString()}",\n  "message": "Fetched payload from simulated edge gateway"\n}`;
-            if (targetName) {
-              handleUpsertWorkspaceFile(targetName, mockData);
-              outputLines.push({
-                id: Math.random().toString(),
-                type: 'success',
-                text: `✓ Downloaded and saved '${targetName}' to workspace (${mockData.length} bytes).`,
-              });
-            } else {
-              outputLines.push({
-                id: Math.random().toString(),
-                type: 'output',
-                text: mockData,
-              });
-            }
-          }
+        } else {
+          outputLines.push({
+            id: Math.random().toString(),
+            type: 'output',
+            text: `<!DOCTYPE html>\n<html>\n<head><title>200 OK</title></head>\n<body>\n<h1>Service Online</h1>\n<p>Response received from ${url}</p>\n</body>\n</html>`,
+          });
         }
         break;
       }
 
       case 'wget': {
-        const urlArg = args.find(a => a.startsWith('http://') || a.startsWith('https://'));
-        if (!urlArg) {
+        const url = args[1];
+        if (!url) {
+          outputLines.push({ id: Math.random().toString(), type: 'error', text: 'wget: missing URL' });
+        } else {
+          const fileName = url.split('/').pop()?.split('?')[0] || 'downloaded_file.txt';
+          handleUpsertWorkspaceFile(fileName, `// Downloaded from ${url}\n// Timestamp: ${new Date().toISOString()}\nconsole.log("Loaded remote asset");\n`);
           outputLines.push({
             id: Math.random().toString(),
-            type: 'error',
-            text: 'wget: missing URL\nUsage: wget <url>',
+            type: 'success',
+            text: `--${new Date().toISOString()}--  ${url}\nConnecting... connected.\nHTTP request sent, awaiting response... 200 OK\nLength: 1024 (1.0K) [text/plain]\nSaving to: '${fileName}'\n\n'${fileName}' saved [1024/1024]`,
           });
-          break;
         }
-
-        const fileName = urlArg.split('/').pop()?.split('?')[0] || 'downloaded.html';
-        const simulatedLog = `--${new Date().toISOString().replace('T', ' ').slice(0, 19)}--  ${urlArg}
-Resolving host... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 2048 (2.0K) [text/html]
-Saving to: '${fileName}'
-
-${fileName}         100%[===================>]   2.00K  --.-KB/s    in 0.002s
-
-${new Date().toISOString().replace('T', ' ').slice(0, 19)} (1.02 MB/s) - '${fileName}' saved [2048/2048]`;
-
-        handleUpsertWorkspaceFile(
-          fileName,
-          `<!-- Downloaded via wget from ${urlArg} -->\n<!DOCTYPE html>\n<html>\n<head><title>${fileName}</title></head>\n<body>\n  <h2>Downloaded asset: ${fileName}</h2>\n</body>\n</html>`
-        );
-
-        outputLines.push({
-          id: Math.random().toString(),
-          type: 'success',
-          text: simulatedLog,
-        });
         break;
       }
 
-      // 11. PYTHON3 & PYTHON (Interactive REPL & Script Execution)
-      case 'python3':
-      case 'python': {
-        const scriptFile = args[0];
-        if (!scriptFile) {
-          // Enter interactive Python REPL
-          setReplMode('python');
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'info',
-            text: `Python 3.12.2 (main, Feb 24 2026, 14:28:10) [Clang 17.0.6] on linux
-Type "help", "copyright", "credits" or "license" for more information.
-Use exit() or quit() to return to bash.`,
-          });
+      case 'echo': {
+        if (trimmed.includes('>')) {
+          const parts = trimmed.substring(5).split('>');
+          const content = parts[0].trim().replace(/^['"]|['"]$/g, '');
+          const dest = parts[1].trim();
+          handleUpsertWorkspaceFile(dest, content);
+          outputLines.push({ id: Math.random().toString(), type: 'success', text: `Written to '${dest}'.` });
         } else {
-          // Execute python file
-          const file = files.find(f => f.name.toLowerCase() === scriptFile.toLowerCase());
-          if (!file) {
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'error',
-              text: `python3: can't open file '${scriptFile}': [Errno 2] No such file or directory`,
-            });
-          } else {
-            const res = executePythonCode(file.content);
-            if (res.outputs.length > 0) {
-              outputLines.push({
-                id: Math.random().toString(),
-                type: 'output',
-                text: res.outputs.join('\n'),
-              });
-            }
-            if (res.error) {
-              outputLines.push({
-                id: Math.random().toString(),
-                type: 'error',
-                text: res.error,
-              });
-            }
-          }
+          const out = trimmed.substring(5).replace(/^['"]|['"]$/g, '');
+          outputLines.push({ id: Math.random().toString(), type: 'output', text: out });
         }
         break;
       }
 
-      // 12. NODE & NODEJS (Interactive REPL & Script Execution)
-      case 'node':
-      case 'nodejs': {
-        const scriptFile = args[0];
-        if (!scriptFile) {
-          // Enter interactive Node REPL
-          setReplMode('node');
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'info',
-            text: `Welcome to Node.js v22.14.0.
-Type ".exit" or "exit" to return to bash.`,
-          });
+      case 'which': {
+        const target = args[1];
+        if (!target) {
+          outputLines.push({ id: Math.random().toString(), type: 'error', text: 'which: missing argument' });
+        } else if (['node', 'npm', 'python3', 'python', 'git', 'gemini', 'nano', 'bash', 'curl', 'wget', 'cat', 'ls', 'chmod'].includes(target)) {
+          outputLines.push({ id: Math.random().toString(), type: 'output', text: `/usr/local/bin/${target}` });
         } else {
-          // Execute js file
-          const file = files.find(f => f.name.toLowerCase() === scriptFile.toLowerCase());
-          if (!file) {
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'error',
-              text: `node: Cannot find module '${scriptFile}'`,
-            });
-          } else {
-            const res = executeNodeCode(file.content);
-            if (res.outputs.length > 0) {
-              outputLines.push({
-                id: Math.random().toString(),
-                type: 'output',
-                text: res.outputs.join('\n'),
-              });
-            }
-            if (res.error) {
-              outputLines.push({
-                id: Math.random().toString(),
-                type: 'error',
-                text: `Uncaught ${res.error}`,
-              });
-            }
-          }
+          outputLines.push({ id: Math.random().toString(), type: 'error', text: `which: no ${target} in (/usr/local/bin:/usr/bin:/bin)` });
         }
         break;
       }
 
-      // 13. NPM (Install Packages & Run Scripts)
-      case 'npm': {
-        const npmAction = args[0];
-        const isGlobal = args.includes('-g') || args.includes('--global');
-
-        if (npmAction === 'i' || npmAction === 'install') {
-          const packages = args.slice(1).filter(p => !p.startsWith('-'));
-          const targetPkgs = packages.length > 0 ? packages : ['dependencies'];
-
-          if (isGlobal) {
-            // Global NPM Package Installation (e.g. npm i -g @google/gemini-cli)
-            const updatedGlobals = { ...globalPackages };
-            targetPkgs.forEach(pkg => {
-              updatedGlobals[pkg] = pkg.includes('gemini') ? '1.4.2' : '1.0.0';
-            });
-            setGlobalPackages(updatedGlobals);
-            try {
-              localStorage.setItem(TERMINAL_GLOBAL_PKGS_STORAGE_KEY, JSON.stringify(updatedGlobals));
-            } catch {
-              // ignore
-            }
-
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'success',
-              text: targetPkgs
-                .map(p => `+ ${p}@${p.includes('gemini') ? '1.4.2' : '1.0.0'}`)
-                .join('\n') +
-                `\nadded ${targetPkgs.length} package${targetPkgs.length > 1 ? 's' : ''} in 0.94s\nInstalled to /home/developer/.npm-global/bin\nRun "${targetPkgs[0].replace('@google/', '')} --help" to use.`,
-            });
-          } else {
-            // Local package installation
-            const pkgJson = files.find(f => f.name === 'package.json');
-            let parsedPkg: any = {
-              name: projectName.toLowerCase().replace(/\s+/g, '-'),
-              version: '1.0.0',
-              dependencies: {},
-            };
-
-            if (pkgJson) {
-              try {
-                parsedPkg = JSON.parse(pkgJson.content);
-              } catch {
-                // fallback
-              }
-            }
-
-            if (!parsedPkg.dependencies) parsedPkg.dependencies = {};
-            targetPkgs.forEach(pkg => {
-              parsedPkg.dependencies[pkg] = '^1.0.0';
-            });
-
-            handleUpsertWorkspaceFile('package.json', JSON.stringify(parsedPkg, null, 2));
-
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'success',
-              text: targetPkgs
-                .map(p => `+ ${p}@1.0.0`)
-                .join('\n') +
-                `\nadded ${targetPkgs.length} package${targetPkgs.length > 1 ? 's' : ''}, and audited ${files.length + 24} packages in 1.18s\nfound 0 vulnerabilities (updated package.json)`,
-            });
-          }
-        } else if (npmAction === 'list' || npmAction === 'ls') {
-          if (isGlobal) {
-            const listText = `/home/developer/.npm-global/lib\n` +
-              Object.entries(globalPackages)
-                .map(([pkg, ver]) => `├── ${pkg}@${ver}`)
-                .join('\n');
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'output',
-              text: listText,
-            });
-          } else {
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'output',
-              text: `${projectName.toLowerCase()}@1.0.0 /home/developer/project\n├── vite@8.3.0\n├── tailwindcss@4.0.0\n└── react@19.0.0`,
-            });
-          }
-        } else if (npmAction === 'run') {
-          const script = args[1];
-          if (script === 'build') {
-            runBuildCommand();
-            return;
-          } else if (script === 'dev') {
-            onTriggerPreviewReload?.();
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'success',
-              text: `[vite] Dev server refreshed. Live sandbox reload dispatched.`,
-            });
-          } else if (script === 'test') {
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'info',
-              text: `> test\n> Running automated test suite for "${projectName}"...\n  ✓ HTML Structure Validation passed\n  ✓ CSS Syntax & Rules parsed cleanly\n  ✓ JavaScript Entry Point verified\nAll test suites passed (3/3).`,
-            });
-          } else if (script === 'lint') {
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'success',
-              text: `✓ No ESLint or TypeScript warnings found across ${files.length} files.`,
-            });
-          } else {
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'output',
-              text: `Unknown script: "${script}". Try "npm run build" or "npm run dev".`,
-            });
-          }
-        } else {
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'output',
-            text: `npm ${npmAction || ''}: command acknowledged. Try "npm install <pkg>" or "npm run build".`,
-          });
-        }
-        break;
-      }
-
-      // 14. CAT (Concatenate & Print)
-      case 'cat': {
-        const hasLineNums = args.includes('-n');
-        const filename = args.find(a => !a.startsWith('-'));
-
-        if (!filename) {
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'error',
-            text: 'cat: missing filename\nUsage: cat [-n] <filename>',
-          });
-        } else {
-          const file = files.find(f => f.name.toLowerCase() === filename.toLowerCase());
-          if (file) {
-            if (hasLineNums) {
-              const numbered = file.content
-                .split('\n')
-                .map((line, idx) => `     ${(idx + 1).toString().padStart(3, ' ')}  ${line}`)
-                .join('\n');
-              outputLines.push({
-                id: Math.random().toString(),
-                type: 'output',
-                text: numbered,
-              });
-            } else {
-              outputLines.push({
-                id: Math.random().toString(),
-                type: 'output',
-                text: file.content,
-              });
-            }
-          } else {
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'error',
-              text: `cat: ${filename}: No such file or directory`,
-            });
-          }
-        }
-        break;
-      }
-
-      // 15. TOUCH (Create / Update File)
-      case 'touch': {
-        const filename = args[0];
-        if (!filename) {
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'error',
-            text: 'touch: missing file operand\nUsage: touch <filename>',
-          });
-        } else {
-          const existing = files.find(f => f.name.toLowerCase() === filename.toLowerCase());
-          if (!existing) {
-            handleUpsertWorkspaceFile(filename, '');
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'output',
-              text: `created empty file '${filename}'`,
-            });
-          }
-        }
-        break;
-      }
-
-      // 16. LS & DIR (List Directory Contents)
-      case 'ls':
-      case 'dir': {
-        const isLong = args.includes('-l') || args.includes('-la') || args.includes('-al');
-        const showAll = args.includes('-a') || args.includes('-la') || args.includes('-al');
-
-        if (isLong) {
-          const rows: string[] = [];
-          rows.push(`total ${files.length + virtualDirs.size + 2}`);
-
-          if (showAll) {
-            rows.push(`drwxr-xr-x 2 developer developer 4096 ${new Date().toDateString().slice(4, 10)} .`);
-            rows.push(`drwxr-xr-x 4 developer developer 4096 ${new Date().toDateString().slice(4, 10)} ..`);
-          }
-
-          // Virtual Directories
-          Array.from(virtualDirs).forEach(dir => {
-            rows.push(`drwxr-xr-x 2 developer developer 4096 ${new Date().toDateString().slice(4, 10)} ${dir}/`);
-          });
-
-          // Files
-          files.forEach(f => {
-            const mode = filePermissions[f.name] || (f.name.endsWith('.js') || f.name.endsWith('.sh') ? 0o755 : 0o644);
-            const perms = modeToPermissions(mode);
-            const size = f.content.length.toString().padStart(6, ' ');
-            rows.push(`${perms} 1 developer developer ${size} ${new Date().toDateString().slice(4, 10)} ${f.name}`);
-          });
-
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'output',
-            text: rows.join('\n'),
-          });
-        } else {
-          const dirEntries = Array.from(virtualDirs).map(d => `${d}/`);
-          const fileEntries = files.map(f => f.name);
-          const allEntries = [...dirEntries, ...fileEntries];
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'output',
-            text: allEntries.join('    '),
-          });
-        }
-        break;
-      }
-
-      // 17. GREP, HEAD, TAIL, WC, CP
-      case 'grep': {
-        const pattern = args[0];
-        const filename = args[1];
-        if (!pattern || !filename) {
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'error',
-            text: 'Usage: grep <pattern> <filename>',
-          });
-        } else {
-          const file = files.find(f => f.name.toLowerCase() === filename.toLowerCase());
-          if (!file) {
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'error',
-              text: `grep: ${filename}: No such file or directory`,
-            });
-          } else {
-            const matched = file.content
-              .split('\n')
-              .filter(line => line.toLowerCase().includes(pattern.toLowerCase()));
-            outputLines.push({
-              id: Math.random().toString(),
-              type: 'output',
-              text: matched.length > 0 ? matched.join('\n') : `(No occurrences of "${pattern}" found)`,
-            });
-          }
-        }
-        break;
-      }
-
-      case 'head': {
-        const filename = args.find(a => !a.startsWith('-'));
-        const file = files.find(f => f.name.toLowerCase() === filename?.toLowerCase());
-        if (file) {
-          const top10 = file.content.split('\n').slice(0, 10).join('\n');
-          outputLines.push({ id: Math.random().toString(), type: 'output', text: top10 });
-        } else {
-          outputLines.push({ id: Math.random().toString(), type: 'error', text: `head: cannot open '${filename}'` });
-        }
-        break;
-      }
-
-      case 'tail': {
-        const filename = args.find(a => !a.startsWith('-'));
-        const file = files.find(f => f.name.toLowerCase() === filename?.toLowerCase());
-        if (file) {
-          const linesArr = file.content.split('\n');
-          const bottom10 = linesArr.slice(Math.max(0, linesArr.length - 10)).join('\n');
-          outputLines.push({ id: Math.random().toString(), type: 'output', text: bottom10 });
-        } else {
-          outputLines.push({ id: Math.random().toString(), type: 'error', text: `tail: cannot open '${filename}'` });
-        }
-        break;
-      }
-
-      case 'wc': {
-        const filename = args[0];
-        const file = files.find(f => f.name.toLowerCase() === filename?.toLowerCase());
-        if (file) {
-          const lineCount = file.content.split('\n').length;
-          const wordCount = file.content.trim().split(/\s+/).filter(Boolean).length;
-          const byteCount = file.content.length;
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'output',
-            text: ` ${lineCount.toString().padStart(4)}  ${wordCount.toString().padStart(4)}  ${byteCount.toString().padStart(5)} ${file.name}`,
-          });
-        } else {
-          outputLines.push({ id: Math.random().toString(), type: 'error', text: `wc: ${filename}: No such file` });
-        }
-        break;
-      }
-
-      case 'cp': {
-        const src = args[0];
-        const dest = args[1];
-        if (!src || !dest) {
-          outputLines.push({ id: Math.random().toString(), type: 'error', text: 'Usage: cp <source> <destination>' });
-        } else {
-          const srcFile = files.find(f => f.name.toLowerCase() === src.toLowerCase());
-          if (srcFile) {
-            handleUpsertWorkspaceFile(dest, srcFile.content);
-            outputLines.push({ id: Math.random().toString(), type: 'output', text: `copied '${src}' -> '${dest}'` });
-          } else {
-            outputLines.push({ id: Math.random().toString(), type: 'error', text: `cp: cannot stat '${src}': No such file` });
-          }
-        }
-        break;
-      }
-
-      // 18. SYSTEM UTILITIES (whoami, uname, uptime, date, echo, env, export, clear)
       case 'whoami':
-        outputLines.push({ id: Math.random().toString(), type: 'output', text: envVars.USER });
+        outputLines.push({ id: Math.random().toString(), type: 'output', text: 'developer' });
         break;
 
       case 'uname':
-        outputLines.push({
-          id: Math.random().toString(),
-          type: 'output',
-          text: 'Linux sandbox-cloud 6.6.0-x86_64 #1 SMP PREEMPT GNU/Linux',
-        });
-        break;
-
-      case 'uptime':
-        outputLines.push({
-          id: Math.random().toString(),
-          type: 'output',
-          text: ` 19:22:40 up 4:18,  1 user,  load average: 0.08, 0.04, 0.01`,
-        });
+        if (args.includes('-a')) {
+          outputLines.push({ id: Math.random().toString(), type: 'output', text: 'Linux sandbox-cloud 6.6.0-x86_64 #1 SMP PREEMPT_DYNAMIC Ubuntu 24.04 LTS x86_64 GNU/Linux' });
+        } else {
+          outputLines.push({ id: Math.random().toString(), type: 'output', text: 'Linux' });
+        }
         break;
 
       case 'date':
         outputLines.push({ id: Math.random().toString(), type: 'output', text: new Date().toString() });
         break;
 
-      case 'echo':
-        outputLines.push({ id: Math.random().toString(), type: 'output', text: args.join(' ') });
+      case 'env': {
+        const envRows = Object.entries(envVars).map(([k, v]) => `${k}=${v}`).join('\n');
+        outputLines.push({ id: Math.random().toString(), type: 'output', text: envRows });
         break;
-
-      case 'env':
-      case 'printenv':
-        outputLines.push({
-          id: Math.random().toString(),
-          type: 'output',
-          text: Object.entries(envVars)
-            .map(([k, v]) => `${k}=${v}`)
-            .join('\n'),
-        });
-        break;
+      }
 
       case 'export': {
-        const expr = args.join(' ');
-        const [k, v] = expr.split('=');
-        if (k && v) {
-          setEnvVars(prev => ({ ...prev, [k.trim()]: v.trim() }));
-          outputLines.push({ id: Math.random().toString(), type: 'output', text: `set ${k.trim()}=${v.trim()}` });
+        const pair = args[1];
+        if (pair && pair.includes('=')) {
+          const [k, ...rest] = pair.split('=');
+          const v = rest.join('=').replace(/^['"]|['"]$/g, '');
+          setEnvVars(prev => ({ ...prev, [k]: v }));
+          outputLines.push({ id: Math.random().toString(), type: 'success', text: `Exported ${k}` });
         }
         break;
       }
-
-      case 'history':
-        outputLines.push({
-          id: Math.random().toString(),
-          type: 'output',
-          text: history.map((h, i) => ` ${(i + 1).toString().padStart(4)}  ${h}`).join('\n'),
-        });
-        break;
-
-      case 'clear':
-      case 'cls':
-        setLines([]);
-        setInputVal('');
-        return;
-
-      // 19. COPILOT, GEMINI CLI & BRAINSTORMER COMMANDS
-      case 'gemini-cli':
-      case 'gemini': {
-        const subcmd = args[0];
-        const isHelp = !subcmd || args.includes('--help') || args.includes('-h');
-        const isVersion = args.includes('-v') || args.includes('--version');
-
-        if (isVersion) {
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'info',
-            text: `@google/gemini-cli v1.4.2 (Official Google Gemini Developer CLI)\nTarget runtime: node v22.14.0, api: @google/genai`,
-          });
-          break;
-        }
-
-        if (isHelp && (!subcmd || subcmd === 'help')) {
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'info',
-            text: `Google Gemini Developer CLI (@google/gemini-cli v1.4.2)
-Usage:
-  gemini <prompt>                  - Query Gemini directly from the command line
-  gemini chat                      - Enter interactive Gemini REPL session
-  gemini review [file]             - Review workspace files or current file
-  gemini explain [file]            - Explain architecture and code in file
-  gemini fix <error message>       - Analyze and generate patch for error
-  gemini models                    - List supported Gemini models
-  gemini --version                 - Print CLI version
-
-Examples:
-  gemini "optimize event loop in app.js"
-  gemini review index.html
-  gemini chat`,
-          });
-          break;
-        }
-
-        if (subcmd === 'models') {
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'output',
-            text: `Available Models (@google/genai):
-  • gemini-flash-latest      [default, ultra-fast]
-  • gemini-3.1-flash-lite    [low latency & high throughput]
-  • gemini-3.8-flash         [deep reasoning & coding partner]`,
-          });
-          break;
-        }
-
-        if (subcmd === 'chat' || subcmd === 'repl') {
-          setReplMode('gemini');
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'info',
-            text: `Starting interactive Gemini CLI REPL session (@google/gemini-cli v1.4.2)...
-Model: gemini-flash-latest • Workspace context attached (${files.length} files).
-Type "exit", "quit" or ":q" to return to bash.`,
-          });
-          break;
-        }
-
-        // Subcommands: review, explain, fix or direct prompt
-        let queryPrompt = '';
-        if (subcmd === 'review') {
-          const targetFile = args[1] || 'all files';
-          queryPrompt = `Review code in ${targetFile} and provide recommendations for performance, security, and structure.`;
-        } else if (subcmd === 'explain') {
-          const targetFile = args[1] || 'current workspace';
-          queryPrompt = `Explain architecture and design of ${targetFile}.`;
-        } else if (subcmd === 'fix') {
-          queryPrompt = `Fix error: ${args.slice(1).join(' ')}`;
-        } else {
-          queryPrompt = args.join(' ');
-        }
-
-        outputLines.push({
-          id: Math.random().toString(),
-          type: 'info',
-          text: `[gemini-cli] Querying Gemini for: "${queryPrompt}"...`,
-        });
-
-        // Trigger request to /api/gemini-cli
-        setTimeout(async () => {
-          try {
-            const resp = await fetch('/api/gemini-cli', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                prompt: queryPrompt,
-                files: files.map(f => ({ name: f.name, content: f.content })),
-              }),
-            });
-            const data = await resp.json();
-            setLines(prev => [
-              ...prev,
-              {
-                id: Math.random().toString(),
-                type: 'output',
-                text: data.text || 'Done.',
-              },
-            ]);
-          } catch (err: any) {
-            setLines(prev => [
-              ...prev,
-              {
-                id: Math.random().toString(),
-                type: 'error',
-                text: `gemini-cli error: ${err?.message || 'Failed to query API'}`,
-              },
-            ]);
-          }
-        }, 50);
-        break;
-      }
-
-      case 'ai': {
-        const query = args.join(' ');
-        if (!query) {
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'info',
-            text: 'Usage: ai <your coding question or task description>',
-          });
-        } else {
-          outputLines.push({
-            id: Math.random().toString(),
-            type: 'info',
-            text: `Dispatching request to Gemini Live Copilot: "${query}"`,
-          });
-          onAskCopilot?.(query);
-        }
-        break;
-      }
-
-      case '!proto':
-      case 'proto':
-        outputLines.push({
-          id: Math.random().toString(),
-          type: 'success',
-          text: `[PLAYGROUND ENGINE // !proto] Disposable Lab Invoked:
-  ✓ Mode: In-Memory / Zero-Dependency Prototype
-  ✓ Runtime: Native Web APIs & Pure Algorithmic State
-  ✓ Sending generation vector to Gemini Live Copilot...`,
-        });
-        onAskCopilot?.('!proto Spin up an in-memory zero-dependency prototype in one file.');
-        break;
-
-      case '!harden':
-      case 'harden':
-        outputLines.push({
-          id: Math.random().toString(),
-          type: 'success',
-          text: `[SECURITY ENGINE // !harden] Defensive Hardening Audit:
-  ✓ WebCrypto AES-GCM Local Storage Vault: Active
-  ✓ Input Sanitization Boundaries: Active
-  ✓ Memory Space: Scoped & Isolated`,
-        });
-        onAskCopilot?.('!harden Audit code and apply WebCrypto AES-GCM encryption and zero-network isolation.');
-        break;
-
-      case '!scaffold':
-      case 'scaffold':
-        outputLines.push({
-          id: Math.random().toString(),
-          type: 'success',
-          text: `[FACTORY ENGINE // !scaffold] Modular Scaffolding:
-  ✓ Primitives Generated: Typed EventBus, Reactive Store, Vector2D
-  ✓ Software Machinery: Reusable Component Contracts`,
-        });
-        onAskCopilot?.('!scaffold Create factory modular scaffolding and typed store primitives.');
-        break;
-
-      // 20. HELP MANUAL
-      case 'help':
-      case 'man':
-        outputLines.push({
-          id: Math.random().toString(),
-          type: 'info',
-          text: `Extended Linux Shell Commands (GNU Coreutils Emulation):
-  Navigation & Dirs:
-    pwd                      - Print current working directory
-    cd <path>                - Change directory (cd .., cd ~, cd src, cd /)
-    mkdir [-p] <dir>         - Create virtual directory
-    rmdir <dir>              - Remove empty directory
-    ls [-la]                 - List files & folders with Unix permissions & sizes
-
-  File Manipulation:
-    nano <filename>          - Open interactive GNU nano 7.2 editor with shortcuts
-    touch <filename>         - Create empty file or update timestamp
-    cat [-n] <filename>      - Display file content (with line numbers)
-    rm [-rf] <target>        - Remove file or directory from workspace
-    rn / mv <old> <new>      - Rename or move file / directory
-    cp <src> <dest>          - Copy file in workspace
-    chmod <mode> <file>      - Change permissions (chmod 755 app.js, chmod +x script.sh)
-
-  Runtime Environments:
-    python3 / python [file]  - Launch interactive Python 3 REPL or run python script
-    node / nodejs [file]     - Launch interactive Node.js REPL or run JS file
-    npm i <pkg>              - Install package into package.json
-    npm run build / dev      - Build production bundle or refresh live preview sandbox
-
-  Networking & VCS:
-    git clone <repo_url>     - Clone git repo with object transfer animation into files
-    git status / log         - Check repository working tree and commit history
-    curl [-I / -O / -o] <url>- Fetch HTTP URL, view headers or save payload
-    wget <url>               - Download remote resource to workspace with progress bar
-
-  Utilities & System:
-    grep <pattern> <file>    - Search text in file
-    head / tail <file>       - View first or last 10 lines of file
-    wc <file>                - Count lines, words, and characters
-    whoami, uname, uptime    - Display system identity and runtime uptime
-    env, export <KEY>=<VAL>  - Inspect and configure environment variables
-    clear, history           - Clear terminal or view past commands
-
-  Gemini Developer CLI:
-    gemini <prompt>          - Query Gemini directly from terminal
-    gemini chat              - Launch interactive Gemini REPL session
-    gemini review [file]     - Perform code review on file or project
-    gemini explain [file]    - Structural code and architecture walkthrough
-    gemini fix <error>       - Analyze error and output patch
-    gemini models            - Display available @google/genai models
-    npm i -g @google/gemini-cli - Install Gemini CLI globally`,
-        });
-        break;
 
       default:
-        outputLines.push({
-          id: Math.random().toString(),
-          type: 'error',
-          text: `bash: ${command}: command not found. Type "help" for a list of available Linux commands.`,
-        });
-        break;
+        outputLines.push({ id: Math.random().toString(), type: 'error', text: `bash: ${command}: command not found` });
     }
 
-    setLines(prev => [...prev, userLine, ...outputLines]);
-    setInputVal('');
+    updatePane(paneId, { lines: [...pane.lines, userLine, ...outputLines], inputVal: '' });
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent, paneId: string = activePaneId) => {
+    const pane = panes.find(p => p.id === paneId) || activePane;
+
     if (e.key === 'Enter') {
-      executeCommand(inputVal);
+      executeCommand(pane.inputVal, paneId);
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      if (pane.replMode !== 'bash') return;
+
+      const val = pane.inputVal;
+      const parts = val.trimStart().split(/\s+/);
+      if (parts.length < 1) return;
+
+      const lastPart = val.endsWith(' ') ? '' : parts[parts.length - 1];
+      const cmd = parts[0].toLowerCase();
+
+      // Only autocomplete if we have a command or we are typing a command
+      const fileCmds = ['cat', 'nano', 'rm', 'edit', 'ls', 'cd', 'vi', 'vim', 'touch'];
+      if (!fileCmds.includes(cmd) && parts.length > 1) return;
+
+      // Get available names in current directory
+      const availableNames = [
+        ...files.filter(f => {
+          if (pane.currentDir === '~' || pane.currentDir === '~/project') return !f.name.includes('/');
+          const relativePath = pane.currentDir.replace('~/project/', '');
+          return f.name.startsWith(relativePath + '/') && !f.name.replace(relativePath + '/', '').includes('/');
+        }).map(f => f.name.split('/').pop() || f.name),
+        ...Array.from(virtualDirs).filter(d => {
+          if (pane.currentDir === '~/project' || pane.currentDir === '~') return !d.includes('/');
+          return d.startsWith(pane.currentDir.replace('~/project/', '') + '/');
+        })
+      ];
+
+      const matches = availableNames.filter(n => n.startsWith(lastPart));
+
+      if (matches.length === 1) {
+        const newVal = val.substring(0, val.lastIndexOf(lastPart)) + matches[0];
+        updatePane(paneId, { inputVal: newVal });
+      } else if (matches.length > 1) {
+        // Cycle matches if Tab is pressed again?
+        // For simplicity, just list them in terminal
+        const matchLines: TerminalLine = {
+          id: Math.random().toString(),
+          type: 'output',
+          text: matches.join('  ')
+        };
+        updatePane(paneId, { lines: [...pane.lines, matchLines] });
+      }
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       if (history.length === 0) return;
-      const nextIdx = historyIdx === -1 ? history.length - 1 : Math.max(0, historyIdx - 1);
-      setHistoryIdx(nextIdx);
-      setInputVal(history[nextIdx] || '');
+      const nextIdx = pane.historyIdx === -1 ? history.length - 1 : Math.max(0, pane.historyIdx - 1);
+      updatePane(paneId, { historyIdx: nextIdx, inputVal: history[nextIdx] || '' });
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
-      if (historyIdx === -1) return;
-      const nextIdx = historyIdx + 1;
+      if (pane.historyIdx === -1) return;
+      const nextIdx = pane.historyIdx + 1;
       if (nextIdx >= history.length) {
-        setHistoryIdx(-1);
-        setInputVal('');
+        updatePane(paneId, { historyIdx: -1, inputVal: '' });
       } else {
-        setHistoryIdx(nextIdx);
-        setInputVal(history[nextIdx] || '');
+        updatePane(paneId, { historyIdx: nextIdx, inputVal: history[nextIdx] || '' });
       }
     } else if (e.ctrlKey && e.key.toLowerCase() === 'c') {
-      e.preventDefault();
-      if (replMode !== 'bash') {
-        setReplMode('bash');
-        setLines(prev => [
-          ...prev,
-          {
-            id: Math.random().toString(),
-            type: 'info',
-            text: '^C\nKeyboardInterrupt: Exited REPL. Returned to bash.',
-          },
-        ]);
-        setInputVal('');
+      if (pane.replMode !== 'bash') {
+        updatePane(paneId, {
+          replMode: 'bash',
+          lines: [
+            ...pane.lines,
+            {
+              id: Math.random().toString(),
+              type: 'info',
+              text: '^C\nKeyboardInterrupt: Exited REPL. Returned to bash.',
+            },
+          ],
+          inputVal: ''
+        });
       } else {
-        setLines(prev => [
-          ...prev,
-          {
-            id: Math.random().toString(),
-            type: 'output',
-            text: `${getPromptPrefix()}${inputVal}^C`,
-          },
-        ]);
-        setInputVal('');
+        updatePane(paneId, {
+          lines: [
+            ...pane.lines,
+            {
+              id: Math.random().toString(),
+              type: 'output',
+              text: `${getPromptPrefix(pane.currentDir, pane.replMode)}${pane.inputVal}^C`,
+            },
+          ],
+          inputVal: ''
+        });
       }
     } else if (e.ctrlKey && e.key.toLowerCase() === 'l') {
       e.preventDefault();
-      setLines([]);
+      updatePane(paneId, { lines: [] });
     }
+  };
+
+  const handleSplit = (direction: 'vertical' | 'horizontal') => {
+    if (panes.length >= 2) return;
+    const newPane: TerminalPane = {
+      id: Math.random().toString(),
+      lines: [...initialLines],
+      currentDir: activePane.currentDir,
+      replMode: 'bash',
+      inputVal: '',
+      historyIdx: -1,
+      pythonContext: {},
+      nanoState: { isOpen: false, fileName: '', initialContent: '' }
+    };
+    setPanes([...panes, newPane]);
+    setLayout(direction === 'vertical' ? 'split-v' : 'split-h');
+    setActivePaneId(newPane.id);
+  };
+
+  const closePane = (id: string) => {
+    if (panes.length <= 1) return;
+    const newPanes = panes.filter(p => p.id !== id);
+    setPanes(newPanes);
+    setLayout('single');
+    setActivePaneId(newPanes[0].id);
   };
 
   if (!isOpen) return null;
@@ -1915,7 +1721,7 @@ Type "exit", "quit" or ":q" to return to bash.`,
             <TerminalIcon className={`w-3.5 h-3.5 ${currentTheme.promptColor}`} />
             <span className="font-semibold text-slate-200">LINUX TERMINAL</span>
             <span className="text-[10px] bg-black/40 text-slate-300 px-1 py-0.2 rounded border border-white/10">
-              {replMode === 'python' ? 'Python 3.12' : replMode === 'node' ? 'Node v22' : 'bash 5.2'}
+              {activePane.replMode === 'python' ? 'Python 3.12' : activePane.replMode === 'node' ? 'Node v22' : 'bash 5.2'}
             </span>
           </div>
 
@@ -1930,7 +1736,7 @@ Type "exit", "quit" or ":q" to return to bash.`,
             >
               <TerminalSquare className={`w-3 h-3 ${currentTheme.promptColor}`} />
               <span>Shell</span>
-              {nanoState.isOpen && (
+              {activePane.nanoState.isOpen && (
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
               )}
             </button>
@@ -1967,7 +1773,7 @@ Type "exit", "quit" or ":q" to return to bash.`,
             <button
               onClick={() => setIsThemeMenuOpen(prev => !prev)}
               className="flex items-center gap-1 px-2 py-0.5 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded border border-white/10 text-[11px] transition-colors"
-              title="Change Terminal Theme (Dracula, Solarized, Nord, Monokai, Cyberpunk, GitHub)"
+              title="Change Terminal Theme"
             >
               <Palette className="w-3 h-3 text-amber-400" />
               <span>{currentTheme.name}</span>
@@ -2019,8 +1825,42 @@ Type "exit", "quit" or ":q" to return to bash.`,
           </button>
 
           <button
+            onClick={() => setIsSearchVisible(prev => !prev)}
+            className={`p-1 hover:text-slate-200 hover:bg-white/10 rounded transition-colors ${isSearchVisible ? 'text-sky-400 bg-sky-400/10' : ''}`}
+            title="Search Output (Esc to close)"
+          >
+            <Search className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            onClick={() => setIsComfortableSpacing(prev => !prev)}
+            className={`p-1 hover:text-slate-200 hover:bg-white/10 rounded transition-colors ${isComfortableSpacing ? 'text-sky-400 bg-sky-400/10' : 'text-slate-400'}`}
+            title={isComfortableSpacing ? 'Comfortable Readability (Click for Compact)' : 'Compact View (Click for Comfortable)'}
+          >
+            <AlignJustify className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            onClick={() => handleSplit('vertical')}
+            className="p-1 hover:text-slate-200 hover:bg-white/10 rounded transition-colors"
+            title="Split Vertical"
+          >
+            <Columns2 className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            onClick={() => handleSplit('horizontal')}
+            className="p-1 hover:text-slate-200 hover:bg-white/10 rounded transition-colors"
+            title="Split Horizontal"
+          >
+            <Rows2 className="w-3.5 h-3.5" />
+          </button>
+
+          <button
             onClick={() => {
-              if (activeTab === 'terminal') setLines([]);
+              if (activeTab === 'terminal') {
+                updateActivePane({ lines: [] });
+              }
               else if (activeTab === 'build') setBuildLogs([]);
             }}
             className="p-1 hover:text-slate-200 hover:bg-white/10 rounded transition-colors"
@@ -2049,127 +1889,169 @@ Type "exit", "quit" or ":q" to return to bash.`,
 
       {/* Tab 1: Terminal Shell or Nano Editor */}
       {activeTab === 'terminal' && (
-        <div className={`flex-1 flex flex-col ${currentTheme.inputBg} overflow-hidden relative`}>
-          {/* If Nano Mode is active */}
-          {nanoState.isOpen ? (
-            <NanoEditor
-              fileName={nanoState.fileName}
-              initialContent={nanoState.initialContent}
-              onSave={(savedName, savedContent) => {
-                handleUpsertWorkspaceFile(savedName, savedContent);
-                setLines(prev => [
-                  ...prev,
-                  {
-                    id: Math.random().toString(),
-                    type: 'success',
-                    text: `[ GNU nano: File '${savedName}' written to workspace (${savedContent.length} bytes) ]`,
-                  },
-                ]);
-              }}
-              onExit={saved => {
-                setNanoState({ isOpen: false, fileName: '', initialContent: '' });
-                setLines(prev => [
-                  ...prev,
-                  {
-                    id: Math.random().toString(),
-                    type: 'info',
-                    text: `[ Closed GNU nano editor for ${nanoState.fileName} ]`,
-                  },
-                ]);
-              }}
-            />
-          ) : (
-            /* Interactive Shell View */
+        <div className={`flex-1 flex ${layout === 'split-h' ? 'flex-col' : 'flex-row'} ${currentTheme.inputBg} overflow-hidden relative`}>
+          {panes.map((pane, index) => (
             <div
-              onClick={() => {
-                setIsThemeMenuOpen(false);
-                inputRef.current?.focus();
-              }}
-              className="flex-1 flex flex-col p-2.5 overflow-hidden font-mono text-xs cursor-text select-text"
+              key={pane.id}
+              className={`flex-1 flex flex-col overflow-hidden relative ${
+                index > 0 ? (layout === 'split-h' ? 'border-t' : 'border-l') + ` ${currentTheme.headerBorder}` : ''
+              } ${activePaneId === pane.id ? 'ring-1 ring-inset ring-sky-500/30' : 'opacity-90 hover:opacity-100 transition-opacity'}`}
+              onClick={() => setActivePaneId(pane.id)}
             >
-              {/* Output History List */}
-              <div className="flex-1 overflow-y-auto space-y-1 mb-1">
-                {lines.map(line => (
-                  <div key={line.id} className="leading-relaxed">
-                    {line.type === 'input' ? (
-                      <div className="flex items-center gap-1.5 text-slate-200 flex-wrap">
-                        <span className={`${currentTheme.promptColor} font-semibold select-none`}>
-                          {line.promptPrefix || getPromptPrefix()}
-                        </span>
-                        <span className={currentTheme.inputTextColor}>{line.text}</span>
-                      </div>
-                    ) : (
-                      <div
-                        className={`whitespace-pre-wrap break-all ${
-                          line.type === 'error'
-                            ? 'text-rose-400'
-                            : line.type === 'success'
-                            ? currentTheme.promptColor
-                            : line.type === 'info'
-                            ? 'text-sky-400'
-                            : currentTheme.outputColor
-                        }`}
-                      >
-                        {line.text}
-                      </div>
-                    )}
+              {/* Pane Header (only if split) */}
+              {panes.length > 1 && (
+                <div className={`flex items-center justify-between px-2 py-0.5 ${currentTheme.headerBg} border-b ${currentTheme.headerBorder} text-[10px]`}>
+                  <div className="flex items-center gap-1.5 text-slate-400">
+                    <span className={activePaneId === pane.id ? 'text-sky-400 font-bold' : ''}>
+                      {pane.replMode.toUpperCase()} SESSION {index + 1}
+                    </span>
+                    <span className="text-[9px] opacity-60">{getFullUnixPath(pane.currentDir)}</span>
                   </div>
-                ))}
-                <div ref={terminalEndRef} />
-              </div>
-
-              {/* Quick Linux Command Shortcut Chips */}
-              <div className="flex items-center gap-1 py-1 overflow-x-auto no-scrollbar border-t border-white/10 select-none text-[10px]">
-                <span className="text-slate-500 uppercase tracking-wider text-[9px] mr-1 shrink-0">Quick:</span>
-                {[
-                  { label: 'gemini --help', cmd: 'gemini --help' },
-                  { label: 'gemini chat', cmd: 'gemini chat' },
-                  { label: 'gemini review', cmd: 'gemini review' },
-                  { label: 'npm i -g @google/gemini-cli', cmd: 'npm i -g @google/gemini-cli' },
-                  { label: 'ls -la', cmd: 'ls -la' },
-                  { label: 'pwd', cmd: 'pwd' },
-                  { label: 'nano index.html', cmd: 'nano index.html' },
-                  { label: 'python3', cmd: 'python3' },
-                  { label: 'node', cmd: 'node' },
-                  { label: 'npm i lodash', cmd: 'npm i lodash' },
-                  { label: 'git status', cmd: 'git status' },
-                  { label: 'chmod +x', cmd: 'chmod +x app.js' },
-                  { label: 'clear', cmd: 'clear' },
-                  { label: 'history', cmd: 'history' },
-                  { label: 'help', cmd: 'help' },
-                ].map(item => (
                   <button
-                    key={item.label}
-                    onClick={() => {
-                      setInputVal(item.cmd);
-                      executeCommand(item.cmd);
-                    }}
-                    className={`px-1.5 py-0.5 ${currentTheme.quickChipBg} ${currentTheme.quickChipHover} ${currentTheme.quickChipText} rounded border ${currentTheme.quickChipBorder} transition-colors shrink-0`}
+                    onClick={(e) => { e.stopPropagation(); closePane(pane.id); }}
+                    className="p-0.5 hover:bg-white/10 rounded"
                   >
-                    {item.label}
+                    <X className="w-2.5 h-2.5" />
                   </button>
-                ))}
-              </div>
+                </div>
+              )}
 
-              {/* Active Command Input Line */}
-              <div className="flex items-center gap-1.5 pt-1 text-xs">
-                <span className={`${currentTheme.promptColor} font-semibold shrink-0 select-none`}>
-                  {getPromptPrefix()}
-                </span>
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={inputVal}
-                  onChange={e => setInputVal(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  autoComplete="off"
-                  spellCheck="false"
-                  className={`flex-1 bg-transparent border-none outline-none ${currentTheme.inputTextColor} font-mono text-xs`}
-                  placeholder={replMode === 'python' ? 'print(2 + 2)' : replMode === 'node' ? 'console.log("hello")' : replMode === 'gemini' ? 'ask gemini anything... (type "exit" to quit)' : 'type command... (Up/Down for history, try "gemini --help")'}
+              {/* Search Bar (Only shown for active pane) */}
+              {isSearchVisible && activePaneId === pane.id && (
+                <div className="absolute top-0 right-0 left-0 bg-[#0d1117]/95 border-b border-white/10 z-20 flex items-center px-3 py-1 gap-2 shadow-lg backdrop-blur-sm animate-in slide-in-from-top-1 duration-200">
+                  <Search className="w-3.5 h-3.5 text-slate-400" />
+                  <input
+                    autoFocus
+                    type="text"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Escape') setIsSearchVisible(false); }}
+                    placeholder="Search terminal output..."
+                    className="flex-1 bg-transparent border-none outline-none text-xs text-slate-200"
+                  />
+                  <button onClick={() => { setSearchQuery(''); setIsSearchVisible(false); }} className="p-0.5 hover:bg-white/10 rounded">
+                    <X className="w-3.5 h-3.5 text-slate-400" />
+                  </button>
+                </div>
+              )}
+
+              {/* If Nano Mode is active */}
+              {pane.nanoState.isOpen ? (
+                <NanoEditor
+                  fileName={pane.nanoState.fileName}
+                  initialContent={pane.nanoState.initialContent}
+                  onSave={(savedName, savedContent) => {
+                    handleUpsertWorkspaceFile(savedName, savedContent);
+                    setPanes(prev => prev.map(p => p.id === pane.id ? {
+                      ...p,
+                      lines: [
+                        ...p.lines,
+                        {
+                          id: Math.random().toString(),
+                          type: 'success',
+                          text: `[ GNU nano: File '${savedName}' written to workspace (${savedContent.length} bytes) ]`,
+                        }
+                      ]
+                    } : p));
+                  }}
+                  onExit={() => {
+                    updatePane(pane.id, {
+                      nanoState: { isOpen: false, fileName: '', initialContent: '' },
+                      lines: [
+                        ...pane.lines,
+                        {
+                          id: Math.random().toString(),
+                          type: 'info',
+                          text: `[ Closed GNU nano editor for ${pane.nanoState.fileName} ]`,
+                        }
+                      ]
+                    });
+                  }}
                 />
-              </div>
+              ) : (
+                /* Interactive Shell View */
+                <div
+                  onClick={() => {
+                    setIsThemeMenuOpen(false);
+                    inputRefs.current[pane.id]?.focus();
+                  }}
+                  className={`flex-1 flex flex-col p-2.5 overflow-hidden font-mono ${
+                    isComfortableSpacing ? 'text-[12.5px] leading-relaxed' : 'text-xs leading-normal'
+                  } cursor-text select-text`}
+                >
+                  {/* Output History List */}
+                  <div className={`flex-1 overflow-y-auto mb-1 ${isComfortableSpacing ? 'space-y-1.5' : 'space-y-0.5'}`}>
+                    {(searchQuery && activePaneId === pane.id ? pane.lines.filter(l => l.text.toLowerCase().includes(searchQuery.toLowerCase())) : pane.lines).map(line => (
+                      <div key={line.id}>
+                        {line.type === 'input' ? (
+                          <div className="flex items-center gap-1.5 text-slate-200 flex-wrap">
+                            <span className={`${currentTheme.promptColor} font-semibold select-none`}>
+                              {line.promptPrefix || getPromptPrefix(pane.currentDir, pane.replMode)}
+                            </span>
+                            <span className={currentTheme.inputTextColor}>{line.text}</span>
+                          </div>
+                        ) : (
+                          renderReadableTerminalLine(line.text, line.type, currentTheme)
+                        )}
+                      </div>
+                    ))}
+                    <div ref={el => { terminalEndRefs.current[pane.id] = el; }} />
+                  </div>
+
+                  {/* Quick Linux Command Shortcut Chips */}
+                  <div className="flex items-center gap-1 py-1 overflow-x-auto no-scrollbar border-t border-white/10 select-none text-[10px]">
+                    <span className="text-slate-500 uppercase tracking-wider text-[9px] mr-1 shrink-0">Quick:</span>
+                    {[
+                      { label: 'gemini --help', cmd: 'gemini --help' },
+                      { label: 'gemini chat', cmd: 'gemini chat' },
+                      { label: 'gemini review', cmd: 'gemini review' },
+                      { label: 'npm i -g @google/gemini-cli', cmd: 'npm i -g @google/gemini-cli' },
+                      { label: 'ls -la', cmd: 'ls -la' },
+                      { label: 'pwd', cmd: 'pwd' },
+                      { label: 'nano index.html', cmd: 'nano index.html' },
+                      { label: 'python3', cmd: 'python3' },
+                      { label: 'node', cmd: 'node' },
+                      { label: 'npm i lodash', cmd: 'npm i lodash' },
+                      { label: 'git status', cmd: 'git status' },
+                      { label: 'chmod +x', cmd: 'chmod +x app.js' },
+                      { label: 'clear', cmd: 'clear' },
+                      { label: 'history', cmd: 'history' },
+                      { label: 'help', cmd: 'help' },
+                    ].map(item => (
+                      <button
+                        key={item.label}
+                        onClick={() => {
+                          updatePane(pane.id, { inputVal: item.cmd });
+                          executeCommand(item.cmd, pane.id);
+                        }}
+                        className={`px-1.5 py-0.5 ${currentTheme.quickChipBg} ${currentTheme.quickChipHover} ${currentTheme.quickChipText} rounded border ${currentTheme.quickChipBorder} transition-colors shrink-0`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Active Command Input Line */}
+                  <div className="flex items-center gap-1.5 pt-1 text-xs border-t border-white/5">
+                    <span className={`${currentTheme.promptColor} font-semibold shrink-0 select-none`}>
+                      {getPromptPrefix(pane.currentDir, pane.replMode)}
+                    </span>
+                    <input
+                      ref={el => { inputRefs.current[pane.id] = el; }}
+                      type="text"
+                      value={pane.inputVal}
+                      onChange={e => updatePane(pane.id, { inputVal: e.target.value })}
+                      onKeyDown={e => handleKeyDown(e, pane.id)}
+                      autoComplete="off"
+                      spellCheck="false"
+                      className={`flex-1 bg-transparent border-none outline-none ${currentTheme.inputTextColor} font-mono text-xs`}
+                      placeholder={pane.replMode === 'python' ? 'print(2 + 2)' : pane.replMode === 'node' ? 'console.log("hello")' : pane.replMode === 'gemini' ? 'ask gemini anything...' : 'type command...'}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          ))}
         </div>
       )}
 
@@ -2215,7 +2097,7 @@ Type "exit", "quit" or ":q" to return to bash.`,
             </div>
             <div className="p-2.5 bg-[#161b22] border border-[#21262d] rounded-lg">
               <div className="text-[10px] text-slate-500 uppercase">Current Directory</div>
-              <div className="text-emerald-400 font-semibold truncate mt-0.5">{getFullUnixPath(currentDir)}</div>
+              <div className="text-emerald-400 font-semibold truncate mt-0.5">{getFullUnixPath(activePane.currentDir)}</div>
             </div>
             <div className="p-2.5 bg-[#161b22] border border-[#21262d] rounded-lg">
               <div className="text-[10px] text-slate-500 uppercase">Active Workspace Files</div>

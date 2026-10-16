@@ -1,3 +1,4 @@
+import http from 'http';
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -1233,11 +1234,16 @@ Provide direct terminal text, formatted code blocks, and actionable Unix solutio
     }
   });
 
+  const httpServer = http.createServer(app);
+
   // Setup Vite middlewares in dev, or static serving in production
   if (!isProd) {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: false,
+      },
       appType: 'spa',
     });
     app.use(vite.middlewares);
@@ -1248,7 +1254,7 @@ Provide direct terminal text, formatted code blocks, and actionable Unix solutio
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`Gemini Live IDE running on http://0.0.0.0:${PORT}`);
   });
 }

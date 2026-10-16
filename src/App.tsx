@@ -3,12 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ProjectFile, ProjectTemplate } from './types/ide';
 import { GalleryApp } from './types/gallery';
 import { STARTER_TEMPLATES } from './data/templates';
 import { TopBar } from './components/Navbar/TopBar';
 import { FileTree } from './components/Sidebar/FileTree';
+import { TestingTab } from './components/Sidebar/TestingTab';
+import { ProjectStats } from './components/Sidebar/ProjectStats';
 import { CodeEditor } from './components/Editor/CodeEditor';
 import { GeminiCopilot } from './components/Copilot/GeminiCopilot';
 import { LivePreview } from './components/Preview/LivePreview';
@@ -17,6 +19,17 @@ import { BrainstormerCanvas } from './components/Brainstormer/BrainstormerCanvas
 import { GenerateProjectModal } from './components/Modals/GenerateProjectModal';
 import { TemplatesModal } from './components/Modals/TemplatesModal';
 import { AppGalleryModal } from './components/Modals/AppGalleryModal';
+import { CollabModal } from './components/Modals/CollabModal';
+import { CollabSession, CollabParticipant } from './types/collaboration';
+import {
+  createCollabSession,
+  joinCollabSession,
+  leaveCollabSession,
+  subscribeToCollabSession,
+  subscribeToParticipants,
+  broadcastCursorPosition,
+  broadcastFileEdit,
+} from './services/collaborationService';
 import { GeminiAppRail, GeminiNavMode } from './components/Navigation/GeminiAppRail';
 import { GeminiAgentCanvas } from './components/Agent/GeminiAgentCanvas';
 import { GitHubHub } from './components/GitHub/GitHubHub';
@@ -28,12 +41,15 @@ import {
   signInWithPopup,
   signOut,
   onAuthStateChanged,
-  User,
   db,
   setDoc,
-  doc
+  doc,
+  getDoc,
+  User,
+  serverTimestamp
 } from './lib/firebase';
-import { X, Plus, Sparkles, Wand2, Terminal, Upload, Download, Brain, LayoutGrid, FileUp, Cloud, Github } from 'lucide-react';
+import { handleFirestoreError, OperationType } from './utils/errorHandlers';
+import { X, Plus, Sparkles, Wand2, Terminal, Upload, Download, Brain, LayoutGrid, FileUp, Cloud, Github, BarChart3 } from 'lucide-react';
 
 export default function App() {
   const initialTemplate = STARTER_TEMPLATES[0];
@@ -46,7 +62,7 @@ export default function App() {
   );
 
   // Layout panels & view mode
-  const [viewMode, setViewMode] = useState<'agent' | 'ide' | 'canvas' | 'split' | 'brainstorm' | 'terminal'>('agent');
+  const [viewMode, setViewMode] = useState<'agent' | 'ide' | 'canvas' | 'split' | 'brainstorm' | 'terminal' | 'testing' | 'stats'>('agent');
   const [showSidebar, setShowSidebar] = useState(true);
   const [showEditor, setShowEditor] = useState(true);
   const [showCopilot, setShowCopilot] = useState(true);
@@ -57,6 +73,7 @@ export default function App() {
 
   // Firebase Auth State
   const [user, setUser] = useState<User | null>(null);
+  const projectInitialized = React.useRef<boolean>(false);
 
   // Modals & Triggers
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
@@ -65,11 +82,211 @@ export default function App() {
   const [externalCopilotPrompt, setExternalCopilotPrompt] = useState<string>('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Real-time Collaboration States
+  const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
+  const [collabSession, setCollabSession] = useState<CollabSession | null>(null);
+  const [collabParticipant, setCollabParticipant] = useState<CollabParticipant | null>(null);
+  const [collabParticipants, setCollabParticipants] = useState<CollabParticipant[]>([]);
+  const isRemoteUpdating = useRef<boolean>(false);
+
+  // Check URL query params for ?collabSession=XYZ invite on boot
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionParam = urlParams.get('collabSession');
+    if (sessionParam) {
+      setIsCollabModalOpen(true);
+      showToast(`Detected collaboration session: ${sessionParam}`);
+    }
+  }, []);
+
+  // Listen to remote changes when collabSession is active
+  useEffect(() => {
+    if (!collabSession) return;
+
+    // 1. Subscribe to session document (for file updates and active file sync)
+    const unsubSession = subscribeToCollabSession(collabSession.id, (remoteSession) => {
+      if (!remoteSession || !remoteSession.files) return;
+      isRemoteUpdating.current = true;
+      setFiles(prevFiles => {
+        const hasDiff = remoteSession.files.some(rf => {
+          const local = prevFiles.find(f => f.id === rf.id);
+          return !local || local.content !== rf.content || local.name !== rf.name;
+        }) || remoteSession.files.length !== prevFiles.length;
+
+        if (hasDiff) {
+          return remoteSession.files;
+        }
+        return prevFiles;
+      });
+      setTimeout(() => {
+        isRemoteUpdating.current = false;
+      }, 50);
+    });
+
+    // 2. Subscribe to participants (cursors, selections, active files)
+    const unsubParticipants = subscribeToParticipants(collabSession.id, (peers) => {
+      setCollabParticipants(peers);
+    });
+
+    return () => {
+      unsubSession();
+      unsubParticipants();
+    };
+  }, [collabSession?.id]);
+
+  const handleStartCollabSession = async (collaboratorName: string) => {
+    const res = await createCollabSession(projectName, files, activeFileId, collaboratorName);
+    setCollabSession(res.session);
+    setCollabParticipant(res.participant);
+    setCollabParticipants([res.participant]);
+    showToast(`Live session '${res.session.id}' created! Share invite link.`);
+  };
+
+  const handleJoinCollabSession = async (sessionId: string, collaboratorName: string) => {
+    const res = await joinCollabSession(sessionId, collaboratorName);
+    setCollabSession(res.session);
+    setCollabParticipant(res.participant);
+    if (res.session.files && res.session.files.length > 0) {
+      setProjectName(res.session.name);
+      setFiles(res.session.files);
+      if (res.session.activeFileId) setActiveFileId(res.session.activeFileId);
+    }
+    showToast(`Connected to live session: ${res.session.name}`);
+  };
+
+  const handleLeaveCollabSession = async () => {
+    if (collabSession && collabParticipant) {
+      await leaveCollabSession(collabSession.id, collabParticipant.id);
+    }
+    setCollabSession(null);
+    setCollabParticipant(null);
+    setCollabParticipants([]);
+    showToast('Disconnected from collaboration session.');
+  };
+
+  const handleEditorCursorChange = (line: number, col: number, selectionText?: string) => {
+    if (collabSession && collabParticipant) {
+      broadcastCursorPosition(collabSession.id, collabParticipant.id, {
+        activeFileId,
+        cursorLine: line,
+        cursorCol: col,
+        selectionText: selectionText || '',
+      });
+    }
+  };
+
+  // Sync project initialization state when project name or user changes
+  useEffect(() => {
+    if (user && projectName) {
+      const projectId = `project-${projectName.toLowerCase().replace(/[^a-z0-9]/g, '-') || 'default'}`;
+      const projectRef = doc(db, 'projects', projectId);
+      
+      const checkProject = async () => {
+        try {
+          const snap = await getDoc(projectRef);
+          projectInitialized.current = snap.exists();
+        } catch (err) {
+          console.warn('Failed to check project existence', err);
+          projectInitialized.current = false;
+        }
+      };
+      checkProject();
+    } else {
+      projectInitialized.current = false;
+    }
+  }, [user, projectName]);
+
   // Concept node seeding for Brainstormer
   const [seedConceptForBrainstormer, setSeedConceptForBrainstormer] = useState<{
     title: string;
     content: string;
   } | null>(null);
+
+  // Auto-save logic (every 5 seconds)
+  useEffect(() => {
+    const saveTimer = setInterval(() => {
+      handleAutoSave();
+    }, 5000);
+
+    return () => clearInterval(saveTimer);
+  }, [files, projectName, user]);
+
+  const handleAutoSave = async () => {
+    try {
+      // 1. LocalStorage persist
+      const projectData = {
+        name: projectName,
+        files,
+        updatedAt: new Date().toISOString(),
+      };
+      localStorage.setItem('gemini_ide_last_project', JSON.stringify(projectData));
+
+      // 2. Firestore persist (if authenticated)
+      if (user) {
+        const projectId = `project-${projectName.toLowerCase().replace(/[^a-z0-9]/g, '-') || 'default'}`;
+        const projectRef = doc(db, 'projects', projectId);
+        
+        // Final sanity check for existence to avoid permission errors on race conditions
+        let exists = projectInitialized.current;
+        if (!exists) {
+          const snap = await getDoc(projectRef);
+          exists = snap.exists();
+          projectInitialized.current = exists;
+        }
+
+        const savePayload: any = {
+          name: projectName,
+          files: files.map(f => ({
+            id: f.id,
+            name: f.name,
+            content: f.content,
+            language: f.language
+          })),
+          updatedAt: serverTimestamp(),
+        };
+
+        try {
+          if (!exists) {
+            savePayload.id = projectId;
+            savePayload.userId = user.uid;
+            savePayload.createdAt = serverTimestamp();
+            await setDoc(projectRef, savePayload);
+            projectInitialized.current = true;
+          } else {
+            // Explicitly NO id, userId, or createdAt on update to avoid rule violations
+            await setDoc(projectRef, savePayload, { merge: true });
+          }
+          console.log('Project auto-saved to Cloud');
+        } catch (err) {
+          handleFirestoreError(err, OperationType.WRITE, `projects/${projectId}`);
+        }
+      }
+    } catch (err) {
+      console.error('Auto-save error:', err);
+    }
+  };
+
+  // Load from LocalStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('gemini_ide_last_project');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.files && parsed.files.length > 0) {
+          // Only load if current project is default
+          if (projectName === STARTER_TEMPLATES[0].title && files.length === STARTER_TEMPLATES[0].files.length) {
+            setProjectName(parsed.name);
+            setFiles(parsed.files);
+            setActiveFileId(parsed.files[0].id);
+            setOpenTabIds(parsed.files.map((f: any) => f.id));
+            console.log('Restored last project from local storage');
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to restore from local storage', e);
+      }
+    }
+  }, []);
 
   const activeFile = files.find(f => f.id === activeFileId) || files[0];
 
@@ -83,21 +300,37 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async currentUser => {
       setUser(currentUser);
       if (currentUser) {
+        const userPath = `users/${currentUser.uid}`;
+        const userRef = doc(db, userPath);
         try {
-          await setDoc(
-            doc(db, 'users', currentUser.uid),
-            {
-              email: currentUser.email || '',
-              displayName: currentUser.displayName || '',
-              photoURL: currentUser.photoURL || '',
-              updatedAt: new Date().toISOString(),
-              createdAt: new Date().toISOString(),
-            },
-            { merge: true }
-          );
+          // Check if user exists to handle createdAt correctly
+          const snap = await getDoc(userRef);
+          const exists = snap.exists();
+
+          const payload: any = {
+            email: currentUser.email || '',
+            displayName: currentUser.displayName || '',
+            photoURL: currentUser.photoURL || '',
+            updatedAt: serverTimestamp(),
+          };
+
+          if (!exists) {
+            payload.uid = currentUser.uid;
+            payload.createdAt = serverTimestamp();
+            await setDoc(userRef, payload);
+          } else {
+            // On update, only send mutable fields
+            await setDoc(userRef, payload, { merge: true });
+          }
         } catch (err: any) {
-          console.warn('User profile sync notice:', err.message);
+          try {
+            handleFirestoreError(err, OperationType.WRITE, userPath);
+          } catch (wrappedErr) {
+             console.warn('User profile sync notice:', wrappedErr);
+          }
         }
+      } else {
+        projectInitialized.current = false;
       }
     });
     return () => unsubscribe();
@@ -151,6 +384,11 @@ export default function App() {
     setFiles(prev =>
       prev.map(f => (f.id === activeFileId ? { ...f, content: newContent } : f))
     );
+
+    // Broadcast file edit to live collaborators
+    if (collabSession && collabParticipant && !isRemoteUpdating.current) {
+      broadcastFileEdit(collabSession.id, files, activeFileId, newContent);
+    }
   };
 
   // Create new file
@@ -169,6 +407,12 @@ export default function App() {
         ? 'shell'
         : ext === 'md'
         ? 'markdown'
+        : ext === 'ts' || ext === 'tsx'
+        ? 'typescript'
+        : ext === 'sql'
+        ? 'sql'
+        : ext === 'yaml' || ext === 'yml'
+        ? 'yaml'
         : 'javascript'
     );
 
@@ -182,6 +426,12 @@ export default function App() {
       ? '#!/usr/bin/env python3\n'
       : resolvedLang === 'json'
       ? '{\n  \n}\n'
+      : resolvedLang === 'typescript'
+      ? '// TypeScript interface\nexport interface AppConfig {\n  name: string;\n  version: string;\n  enabled: boolean;\n}\n'
+      : resolvedLang === 'sql'
+      ? '-- SQL Schema & Query\nSELECT id, name, created_at FROM projects WHERE active = true ORDER BY created_at DESC;\n'
+      : resolvedLang === 'yaml'
+      ? '# YAML Configuration\nversion: "1.0"\nserver:\n  port: 3000\n  host: 0.0.0.0\n'
       : '// JavaScript code\n';
 
     const newFile: ProjectFile = {
@@ -584,6 +834,9 @@ export default function App() {
           viewMode={viewMode}
           setViewMode={setViewMode}
           onOpenGitHub={() => setIsGitHubHubOpen(true)}
+          onOpenCollab={() => setIsCollabModalOpen(true)}
+          isCollabActive={!!collabSession}
+          collabParticipants={collabParticipants}
         />
 
         {/* Main Workspace: Mode Conditional Rendering */}
@@ -713,6 +966,9 @@ export default function App() {
                     file={activeFile}
                     onChange={handleUpdateContent}
                     onAskCopilot={handleAskCopilot}
+                    remoteParticipants={collabParticipants}
+                    currentParticipantId={collabParticipant?.id}
+                    onCursorChange={handleEditorCursorChange}
                   />
                 </div>
               </div>
@@ -745,23 +1001,35 @@ export default function App() {
         ) : (
           /* IDE Full Multi-Pane Mode */
           <div className="flex-1 flex overflow-hidden relative">
-            {/* Left File Tree Sidebar */}
+            {/* Left Sidebar (Explorer, Testing, or Stats) */}
             {showSidebar && (
-              <FileTree
-                files={files}
-                activeFileId={activeFileId}
-                onSelectFile={handleSelectFile}
-                onAddFile={handleAddFile}
-                onDeleteFile={handleDeleteFile}
-                onRenameFile={handleRenameFile}
-                onOpenTemplatesModal={() => setIsTemplatesModalOpen(true)}
-                onExportProject={handleExportProject}
-                onUploadFile={handleUploadFile}
-                onDownloadFile={handleDownloadFile}
-                onBrainstormOnFile={handleBrainstormOnFile}
-                onOpenGallery={() => setIsGalleryOpen(true)}
-                onDownloadStandaloneHtml={handleDownloadStandaloneHtml}
-              />
+              viewMode === 'testing' ? (
+                <TestingTab 
+                  files={files} 
+                  onSelectFile={handleSelectFile} 
+                />
+              ) : viewMode === 'stats' ? (
+                <ProjectStats 
+                  files={files}
+                  projectName={projectName}
+                />
+              ) : (
+                <FileTree
+                  files={files}
+                  activeFileId={activeFileId}
+                  onSelectFile={handleSelectFile}
+                  onAddFile={handleAddFile}
+                  onDeleteFile={handleDeleteFile}
+                  onRenameFile={handleRenameFile}
+                  onOpenTemplatesModal={() => setIsTemplatesModalOpen(true)}
+                  onExportProject={handleExportProject}
+                  onUploadFile={handleUploadFile}
+                  onDownloadFile={handleDownloadFile}
+                  onBrainstormOnFile={handleBrainstormOnFile}
+                  onOpenGallery={() => setIsGalleryOpen(true)}
+                  onDownloadStandaloneHtml={handleDownloadStandaloneHtml}
+                />
+              )
             )}
 
             {/* Central Code Editor */}
@@ -835,6 +1103,9 @@ export default function App() {
                     file={activeFile}
                     onChange={handleUpdateContent}
                     onAskCopilot={handleAskCopilot}
+                    remoteParticipants={collabParticipants}
+                    currentParticipantId={collabParticipant?.id}
+                    onCursorChange={handleEditorCursorChange}
                   />
                 </div>
               </div>
@@ -994,6 +1265,18 @@ export default function App() {
         isOpen={isTemplatesModalOpen}
         onClose={() => setIsTemplatesModalOpen(false)}
         onSelectTemplate={handleSelectTemplate}
+      />
+
+      {/* Real-Time Collaboration Modal */}
+      <CollabModal
+        isOpen={isCollabModalOpen}
+        onClose={() => setIsCollabModalOpen(false)}
+        activeSession={collabSession}
+        currentParticipant={collabParticipant}
+        participants={collabParticipants}
+        onStartSession={handleStartCollabSession}
+        onJoinSession={handleJoinCollabSession}
+        onLeaveSession={handleLeaveCollabSession}
       />
     </div>
   );

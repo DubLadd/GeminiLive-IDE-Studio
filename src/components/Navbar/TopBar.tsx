@@ -19,9 +19,11 @@ import {
   Upload,
   LogIn,
   LogOut,
-  Cloud
+  Cloud,
+  Users
 } from 'lucide-react';
 import { User } from '../../lib/firebase';
+import { CollabParticipant } from '../../types/collaboration';
 
 interface TopBarProps {
   projectName: string;
@@ -46,9 +48,12 @@ interface TopBarProps {
   setShowEditor: React.Dispatch<React.SetStateAction<boolean>>;
   showTerminal: boolean;
   setShowTerminal: React.Dispatch<React.SetStateAction<boolean>>;
-  viewMode: 'agent' | 'ide' | 'canvas' | 'split' | 'brainstorm' | 'terminal';
-  setViewMode: (mode: 'agent' | 'ide' | 'canvas' | 'split' | 'brainstorm' | 'terminal') => void;
+  viewMode: 'agent' | 'ide' | 'canvas' | 'split' | 'brainstorm' | 'terminal' | 'testing' | 'stats';
+  setViewMode: (mode: 'agent' | 'ide' | 'canvas' | 'split' | 'brainstorm' | 'terminal' | 'testing' | 'stats') => void;
   onOpenGitHub?: () => void;
+  onOpenCollab?: () => void;
+  isCollabActive?: boolean;
+  collabParticipants?: CollabParticipant[];
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -77,6 +82,9 @@ export const TopBar: React.FC<TopBarProps> = ({
   viewMode,
   setViewMode,
   onOpenGitHub,
+  onOpenCollab,
+  isCollabActive = false,
+  collabParticipants = [],
 }) => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(projectName);
@@ -266,6 +274,30 @@ export const TopBar: React.FC<TopBarProps> = ({
           >
             <Download className="w-3.5 h-3.5" />
           </button>
+
+          {/* Real-Time Collaboration Button */}
+          {isCollabActive ? (
+            <button
+              onClick={onOpenCollab}
+              className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 rounded-lg text-xs font-medium transition-all shadow-sm"
+              title="Real-Time Collaboration Active - Click to Manage"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span>Live ({collabParticipants.length})</span>
+            </button>
+          ) : (
+            <button
+              onClick={onOpenCollab}
+              className="flex items-center gap-1.5 px-2.5 py-1 bg-[#21262d] hover:bg-[#30363d] text-slate-300 hover:text-white border border-[#30363d] rounded-lg text-xs font-medium transition-colors"
+              title="Share project for real-time collaboration with live cursors"
+            >
+              <Users className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Collaborate</span>
+            </button>
+          )}
 
           {/* Firebase Google Auth Profile */}
           {user ? (

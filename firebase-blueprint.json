@@ -1,84 +1,86 @@
 {
   "entities": {
-    "UserProfile": {
-      "title": "UserProfile",
-      "description": "User profile document",
+    "User": {
+      "title": "User Profile",
+      "description": "User profile information",
       "type": "object",
       "properties": {
-        "email": {
-          "type": "string",
-          "description": "User email address"
-        },
-        "displayName": {
-          "type": "string",
-          "description": "User display name"
-        },
-        "photoURL": {
-          "type": "string",
-          "description": "User profile avatar URL"
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Creation timestamp"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Last update timestamp"
-        }
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "timestamp" },
+        "createdAt": { "type": "string", "format": "timestamp" }
       },
-      "required": ["email", "createdAt"]
+      "required": ["uid", "email", "updatedAt", "createdAt"]
     },
-    "AppProject": {
-      "title": "AppProject",
-      "description": "Saved web app / prototype in App Gallery",
+    "Project": {
+      "title": "Project",
+      "description": "User project with files",
       "type": "object",
       "properties": {
-        "userId": {
-          "type": "string",
-          "description": "Owner user UID"
-        },
-        "title": {
-          "type": "string",
-          "description": "App title",
-          "maxLength": 150
-        },
-        "description": {
-          "type": "string",
-          "description": "App description",
-          "maxLength": 1000
-        },
-        "htmlContent": {
-          "type": "string",
-          "description": "Full runnable HTML/JS/CSS code"
-        },
-        "category": {
-          "type": "string",
-          "description": "App category e.g. prototype, tool, game, utility"
-        },
-        "tags": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "files": {
           "type": "array",
-          "description": "Tags list up to 10 tags"
+          "description": "Array of project files"
         },
-        "createdAt": {
-          "type": "string",
-          "description": "ISO timestamp created"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "ISO timestamp updated"
-        }
+        "updatedAt": { "type": "string", "format": "timestamp" },
+        "createdAt": { "type": "string", "format": "timestamp" }
       },
-      "required": ["userId", "title", "htmlContent", "createdAt", "updatedAt"]
+      "required": ["id", "userId", "name", "files", "updatedAt", "createdAt"]
+    },
+    "CollabSession": {
+      "title": "Collaboration Session",
+      "description": "Real-time collaborative project editing session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "hostId": { "type": "string" },
+        "hostName": { "type": "string" },
+        "activeFileId": { "type": "string" },
+        "files": { "type": "array" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["id", "name", "hostId", "files", "createdAt", "updatedAt"]
+    },
+    "CollabParticipant": {
+      "title": "Session Participant",
+      "description": "Participant in a collaborative editing session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "color": { "type": "string" },
+        "isHost": { "type": "boolean" },
+        "activeFileId": { "type": "string" },
+        "cursorLine": { "type": "number" },
+        "cursorCol": { "type": "number" },
+        "selectionText": { "type": "string" },
+        "lastActive": { "type": "number" }
+      },
+      "required": ["id", "name", "color", "lastActive"]
     }
   },
   "firestore": {
     "/users/{userId}": {
-      "schema": "UserProfile",
-      "description": "User profile data accessible only by owner"
+      "schema": "User",
+      "description": "User profile documents"
     },
-    "/apps/{appId}": {
-      "schema": "AppProject",
-      "description": "Saved gallery app prototypes owned by user"
+    "/projects/{projectId}": {
+      "schema": "Project",
+      "description": "User projects"
+    },
+    "/collab_sessions/{sessionId}": {
+      "schema": "CollabSession",
+      "description": "Collaborative project sessions"
+    },
+    "/collab_sessions/{sessionId}/participants/{participantId}": {
+      "schema": "CollabParticipant",
+      "description": "Real-time participant presence and cursors"
     }
   }
 }

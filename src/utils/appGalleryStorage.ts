@@ -1,5 +1,5 @@
 import { GalleryApp } from '../types/gallery';
-import { db, doc, setDoc, deleteDoc, getDocs, collection, query, where, User } from '../lib/firebase';
+import { db, doc, setDoc, deleteDoc, getDocs, collection, query, where, User, serverTimestamp } from '../lib/firebase';
 
 const LOCAL_STORAGE_KEY = 'gemini_ide_app_gallery_v1';
 
@@ -352,17 +352,24 @@ export function deleteLocalApp(appId: string): GalleryApp[] {
 // Save app to Firestore
 export async function saveAppToFirestore(app: GalleryApp, user: User): Promise<void> {
   const appDocRef = doc(db, 'apps', app.id);
-  const data = {
+  const data: any = {
     userId: user.uid,
     title: app.title.slice(0, 180),
     description: app.description.slice(0, 950),
     category: app.category || 'prototype',
     tags: app.tags || [],
     htmlContent: app.htmlContent,
-    createdAt: app.createdAt || new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    updatedAt: serverTimestamp(),
   };
-  await setDoc(appDocRef, data);
+
+  // Only send createdAt if it doesn't exist locally yet
+  if (!app.createdAt) {
+    data.createdAt = serverTimestamp();
+  } else {
+    data.createdAt = app.createdAt;
+  }
+
+  await setDoc(appDocRef, data, { merge: true });
 }
 
 // Load user's apps from Firestore

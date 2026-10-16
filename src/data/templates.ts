@@ -1,6 +1,8 @@
 import { ProjectTemplate } from '../types/ide';
+import { AETHER_VECTOR_TEMPLATE } from './aetherVectorTemplate';
 
 export const STARTER_TEMPLATES: ProjectTemplate[] = [
+  AETHER_VECTOR_TEMPLATE,
   {
     id: 'cyber-particles',
     title: 'Neon Gravity Particle Lab',

@@ -6,10 +6,6 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
-    }
-
     function isSignedIn() {
       return request.auth != null;
     }
@@ -26,17 +22,16 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    // Connection test document (publicly readable for health checks)
+    match /test/connection {
+      allow read: if true;
+    }
+
     // User profiles collection
     match /users/{userId} {
       allow get: if isOwner(userId);
       allow list: if false; // PII isolation: prevent user scraping
-      allow create: if isOwner(userId) &&
-        isValidId(userId) &&
-        incoming().keys().hasAll(['email', 'createdAt']) &&
-        incoming().email is string &&
-        incoming().createdAt is string;
-      allow update: if isOwner(userId) &&
-        incoming().email is string;
+      allow create, update: if isOwner(userId);
       allow delete: if false;
     }
 
@@ -49,18 +44,29 @@ service cloud.firestore {
       // Secure Query Enforcer for list queries
       allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
       allow create: if isSignedIn() &&
-        isValidId(appId) &&
         incoming().userId == request.auth.uid &&
         incoming().title is string &&
         incoming().title.size() <= 200 &&
         incoming().htmlContent is string;
       allow update: if isSignedIn() &&
-        isValidId(appId) &&
         existing().userId == request.auth.uid &&
         incoming().userId == existing().userId;
       allow delete: if isSignedIn() &&
-        isValidId(appId) &&
         existing().userId == request.auth.uid;
+    }
+
+    // Real-time Collaborative Sessions
+    match /collab_sessions/{sessionId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+
+      // Participants presence, cursors, and selections
+      match /participants/{participantId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn();
+      }
     }
   }
 }

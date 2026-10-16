@@ -1,7 +1,7 @@
 import React from 'react';
 import { STARTER_TEMPLATES } from '../../data/templates';
 import { ProjectTemplate } from '../../types/ide';
-import { X, Sparkles, Gamepad2, BarChart2, FolderCode } from 'lucide-react';
+import { X, Sparkles, Gamepad2, BarChart2, FolderCode, Orbit } from 'lucide-react';
 
 interface TemplatesModalProps {
   isOpen: boolean;
@@ -18,6 +18,8 @@ export const TemplatesModal: React.FC<TemplatesModalProps> = ({
 
   const renderIcon = (iconName: string) => {
     switch (iconName) {
+      case 'Orbit':
+        return <Orbit className="w-5 h-5 text-emerald-400" />;
       case 'Sparkles':
         return <Sparkles className="w-5 h-5 text-sky-400" />;
       case 'Gamepad2':

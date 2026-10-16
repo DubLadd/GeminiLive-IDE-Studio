@@ -2,7 +2,7 @@ export interface ProjectFile {
   id: string;
   name: string;
   content: string;
-  language: 'html' | 'css' | 'javascript' | 'json' | 'markdown' | 'typescript' | 'python' | 'plaintext' | 'shell';
+  language: 'html' | 'css' | 'javascript' | 'json' | 'markdown' | 'typescript' | 'python' | 'plaintext' | 'shell' | 'sql' | 'yaml';
 }
 
 export interface ConsoleLog {

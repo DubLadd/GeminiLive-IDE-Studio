@@ -67,6 +67,8 @@ export const FileTree: React.FC<FileTreeProps> = ({
     if (ext === 'json') return 'json';
     if (ext === 'md') return 'markdown';
     if (ext === 'ts' || ext === 'tsx') return 'typescript';
+    if (ext === 'sql') return 'sql';
+    if (ext === 'yaml' || ext === 'yml') return 'yaml';
     return 'javascript';
   };
 
@@ -78,6 +80,12 @@ export const FileTree: React.FC<FileTreeProps> = ({
         return <span className="text-sky-400 font-bold text-xs">CSS</span>;
       case 'javascript':
         return <span className="text-amber-400 font-bold text-xs">JS</span>;
+      case 'typescript':
+        return <span className="text-blue-400 font-bold text-xs">TS</span>;
+      case 'sql':
+        return <span className="text-emerald-400 font-bold text-xs">SQL</span>;
+      case 'yaml':
+        return <span className="text-rose-400 font-bold text-xs">YML</span>;
       case 'json':
         return <FileSpreadsheet className="w-3.5 h-3.5 text-yellow-500" />;
       case 'markdown':

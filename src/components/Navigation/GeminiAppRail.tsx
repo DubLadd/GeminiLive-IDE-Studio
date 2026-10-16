@@ -15,12 +15,14 @@ import {
   HelpCircle,
   Upload,
   Download,
-  Key
+  Key,
+  TestTube2,
+  BarChart3
 } from 'lucide-react';
 import { User } from '../../lib/firebase';
 import { getStoredGitHubToken } from '../../services/githubService';
 
-export type GeminiNavMode = 'agent' | 'ide' | 'split' | 'brainstorm' | 'terminal';
+export type GeminiNavMode = 'agent' | 'ide' | 'split' | 'brainstorm' | 'terminal' | 'testing' | 'stats';
 
 interface GeminiAppRailProps {
   currentMode: GeminiNavMode;
@@ -67,6 +69,30 @@ export const GeminiAppRail: React.FC<GeminiAppRailProps> = ({
       color: 'text-emerald-400',
       activeBg: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/50',
       description: 'Editor + HTML/TS/JS Sandbox',
+    },
+    {
+      id: 'ide' as GeminiNavMode,
+      label: 'Full IDE',
+      icon: LayoutGrid,
+      color: 'text-sky-400',
+      activeBg: 'bg-sky-500/10 text-sky-300 border-sky-500/50',
+      description: 'Multi-pane development environment',
+    },
+    {
+      id: 'testing' as GeminiNavMode,
+      label: 'Testing Lab',
+      icon: TestTube2,
+      color: 'text-rose-400',
+      activeBg: 'bg-rose-500/10 text-rose-300 border-rose-500/50',
+      description: 'Unit testing & results',
+    },
+    {
+      id: 'stats' as GeminiNavMode,
+      label: 'Project Stats',
+      icon: BarChart3,
+      color: 'text-sky-400',
+      activeBg: 'bg-sky-500/10 text-sky-300 border-sky-500/50',
+      description: 'Code metrics & breakdown',
     },
     {
       id: 'brainstorm' as GeminiNavMode,

@@ -1,19 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ProjectFile } from '../../types/ide';
+import { CollabParticipant } from '../../types/collaboration';
 import { formatCode } from '../../utils/codeFormatter';
-import { Search, Replace, Copy, Check, Sparkles, Wand2, RefreshCw } from 'lucide-react';
+import { Search, Replace, Copy, Check, Sparkles, Wand2, RefreshCw, Users } from 'lucide-react';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-css';
 import 'prismjs/components/prism-markup'; // HTML
 import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-markdown';
+import 'prismjs/components/prism-python';
+import 'prismjs/components/prism-bash';
+import 'prismjs/components/prism-sql';
+import 'prismjs/components/prism-yaml';
 
 interface CodeEditorProps {
   file: ProjectFile;
   onChange: (newContent: string) => void;
   onSave?: () => void;
   onAskCopilot?: (selectedCode: string) => void;
+  remoteParticipants?: CollabParticipant[];
+  currentParticipantId?: string;
+  onCursorChange?: (line: number, col: number, selectionText?: string) => void;
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -21,6 +30,9 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   onChange,
   onSave,
   onAskCopilot,
+  remoteParticipants = [],
+  currentParticipantId,
+  onCursorChange,
 }) => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,16 +44,23 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const preRef = useRef<HTMLPreElement>(null);
 
-  // Sync highlighting
+  // Sync highlighting across all supported languages: TS, SQL, YAML, JS, HTML, CSS, JSON, Python, Bash
   const highlightedCode = React.useMemo(() => {
     let grammar = Prism.languages.javascript;
-    if (file.language === 'html') grammar = Prism.languages.markup;
-    else if (file.language === 'css') grammar = Prism.languages.css;
-    else if (file.language === 'json') grammar = Prism.languages.json;
-    else if (file.language === 'markdown') grammar = Prism.languages.markdown;
+    const lang = file.language?.toLowerCase();
+
+    if (lang === 'html' || lang === 'markup') grammar = Prism.languages.markup;
+    else if (lang === 'css') grammar = Prism.languages.css;
+    else if (lang === 'json') grammar = Prism.languages.json;
+    else if (lang === 'markdown') grammar = Prism.languages.markdown;
+    else if (lang === 'typescript' || lang === 'ts' || lang === 'tsx') grammar = Prism.languages.typescript || Prism.languages.javascript;
+    else if (lang === 'sql') grammar = Prism.languages.sql;
+    else if (lang === 'yaml' || lang === 'yml') grammar = Prism.languages.yaml;
+    else if (lang === 'python' || lang === 'py') grammar = Prism.languages.python;
+    else if (lang === 'shell' || lang === 'bash' || lang === 'sh') grammar = Prism.languages.bash;
 
     try {
-      return Prism.highlight(file.content || '', grammar, file.language);
+      return Prism.highlight(file.content || '', grammar, lang || 'javascript');
     } catch {
       return file.content || '';
     }
@@ -49,6 +68,11 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
   const lines = (file.content || '').split('\n');
   const lineCount = lines.length;
+
+  // Filter remote participants active on this file
+  const activeRemoteParticipants = remoteParticipants.filter(
+    p => p.activeFileId === file.id && p.id !== currentParticipantId
+  );
 
   // Handle Tab key and shortcuts
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -78,6 +102,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
       setTimeout(() => {
         textarea.selectionStart = textarea.selectionEnd = start + 2;
+        handleSelect();
       }, 0);
     }
   };
@@ -102,6 +127,9 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
     const selected = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd);
     setSelectedText(selected);
+
+    // Notify collaboration service of cursor and selection movement
+    onCursorChange?.(lineIndex, colIndex, selected);
   };
 
   const handleCopy = () => {
@@ -113,31 +141,41 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   // Search & Replace actions
   const handleFindNext = () => {
     if (!searchQuery || !textareaRef.current) return;
-    const text = textareaRef.current.value;
-    const currentPos = textareaRef.current.selectionEnd;
-    let nextIdx = text.indexOf(searchQuery, currentPos);
-    if (nextIdx === -1) {
-      nextIdx = text.indexOf(searchQuery, 0); // wrap around
-    }
-    if (nextIdx !== -1) {
+    const content = textareaRef.current.value;
+    const start = textareaRef.current.selectionEnd;
+    const index = content.toLowerCase().indexOf(searchQuery.toLowerCase(), start);
+
+    if (index !== -1) {
       textareaRef.current.focus();
-      textareaRef.current.setSelectionRange(nextIdx, nextIdx + searchQuery.length);
+      textareaRef.current.setSelectionRange(index, index + searchQuery.length);
+      handleSelect();
+    } else {
+      // Loop back to beginning
+      const firstIndex = content.toLowerCase().indexOf(searchQuery.toLowerCase(), 0);
+      if (firstIndex !== -1) {
+        textareaRef.current.focus();
+        textareaRef.current.setSelectionRange(firstIndex, firstIndex + searchQuery.length);
+        handleSelect();
+      }
     }
   };
 
   const handleReplaceOne = () => {
     if (!searchQuery || !textareaRef.current) return;
-    const text = textareaRef.current.value;
+    const content = textareaRef.current.value;
     const start = textareaRef.current.selectionStart;
     const end = textareaRef.current.selectionEnd;
-    const sel = text.substring(start, end);
+    const selected = content.substring(start, end);
 
-    if (sel === searchQuery) {
-      const nextContent = text.substring(0, start) + replaceQuery + text.substring(end);
-      onChange(nextContent);
+    if (selected.toLowerCase() === searchQuery.toLowerCase()) {
+      const updated = content.substring(0, start) + replaceQuery + content.substring(end);
+      onChange(updated);
       setTimeout(() => {
-        handleFindNext();
-      }, 10);
+        if (textareaRef.current) {
+          textareaRef.current.setSelectionRange(start, start + replaceQuery.length);
+          handleFindNext();
+        }
+      }, 0);
     } else {
       handleFindNext();
     }
@@ -145,47 +183,62 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
   const handleReplaceAll = () => {
     if (!searchQuery) return;
-    const regex = new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+    const regex = new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
     const updated = file.content.replace(regex, replaceQuery);
     onChange(updated);
   };
 
   const handleFormat = () => {
-    try {
-      const formatted = formatCode(file.content, file.language);
-      onChange(formatted);
-    } catch {
-      // Ignored if parsing fails
-    }
+    const formatted = formatCode(file.content, file.language);
+    onChange(formatted);
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#0d1117] text-slate-200 relative overflow-hidden select-text">
-      {/* Editor Sub-header & Action Bar */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#161b22] border-b border-[#30363d] text-xs">
-        <div className="flex items-center gap-2 text-slate-400">
-          <span className="font-mono text-slate-300 font-medium">{file.name}</span>
-          <span className="text-slate-600">·</span>
-          <span className="uppercase text-[10px] tracking-wider text-slate-500 font-semibold">{file.language}</span>
-          <span className="text-slate-600">·</span>
-          <span>{lineCount} lines</span>
+    <div className="flex-1 flex flex-col h-full bg-[#0d1117] text-slate-100 overflow-hidden relative select-none">
+      {/* Editor Sub-Header Bar */}
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#161b22] border-b border-[#21262d] text-xs">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-slate-200">{file.name}</span>
+          <span className="px-1.5 py-0.5 text-[10px] uppercase font-mono bg-[#21262d] text-slate-400 rounded">
+            {file.language}
+          </span>
+          {activeRemoteParticipants.length > 0 && (
+            <div className="flex items-center gap-1.5 ml-2 pl-2 border-l border-[#30363d]">
+              <Users className="w-3.5 h-3.5 text-emerald-400" />
+              <div className="flex -space-x-1.5 overflow-hidden">
+                {activeRemoteParticipants.map(p => (
+                  <div
+                    key={p.id}
+                    title={`${p.name} editing here`}
+                    className="w-4 h-4 rounded-full border border-[#161b22] flex items-center justify-center text-[8px] font-bold text-slate-900 shadow-sm"
+                    style={{ backgroundColor: p.color }}
+                  >
+                    {p.name.charAt(0).toUpperCase()}
+                  </div>
+                ))}
+              </div>
+              <span className="text-[11px] text-emerald-400 font-mono">
+                {activeRemoteParticipants.length} active
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-1.5">
-          {selectedText.trim() && onAskCopilot && (
+          {selectedText && onAskCopilot && (
             <button
               onClick={() => onAskCopilot(selectedText)}
-              className="flex items-center gap-1 px-2 py-1 bg-sky-600/20 text-sky-400 hover:bg-sky-600/30 rounded border border-sky-500/30 transition-colors text-[11px] font-medium"
-              title="Ask Gemini Live about selected snippet"
+              className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-sky-500/20 to-purple-500/20 hover:from-sky-500/30 hover:to-purple-500/30 text-sky-300 border border-sky-500/30 rounded text-xs transition-colors"
+              title="Send highlighted code snippet to Gemini"
             >
-              <Sparkles className="w-3 h-3" />
+              <Sparkles className="w-3 h-3 text-sky-400" />
               <span>Ask Gemini</span>
             </button>
           )}
 
           <button
             onClick={() => setShowSearch(prev => !prev)}
-            className={`p-1 rounded hover:bg-[#21262d] transition-colors ${showSearch ? 'text-sky-400 bg-[#21262d]' : 'text-slate-400'}`}
+            className={`p-1 rounded hover:bg-[#21262d] transition-colors ${showSearch ? 'text-sky-400 bg-[#21262d]' : 'text-slate-400 hover:text-slate-200'}`}
             title="Find & Replace (Ctrl+F)"
           >
             <Search className="w-3.5 h-3.5" />
@@ -194,7 +247,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           <button
             onClick={handleFormat}
             className="p-1 text-slate-400 hover:text-slate-200 rounded hover:bg-[#21262d] transition-colors"
-            title="Clean Indentation"
+            title="Clean Indentation & Format Code"
           >
             <Wand2 className="w-3.5 h-3.5" />
           </button>
@@ -286,6 +339,45 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
             dangerouslySetInnerHTML={{ __html: highlightedCode + '\n' }}
           />
 
+          {/* Remote Collaborators Cursors & Labels Overlay */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden z-20 m-0 p-3">
+            {activeRemoteParticipants.map(participant => {
+              const lineIdx = Math.max(1, participant.cursorLine || 1) - 1;
+              const colIdx = Math.max(1, participant.cursorCol || 1) - 1;
+
+              // Approximate line height (20.8px for 13px at 1.6 leading) and monospace character width (~7.8px)
+              const topPx = lineIdx * 20.8;
+              const leftPx = colIdx * 7.8;
+
+              return (
+                <div
+                  key={participant.id}
+                  style={{
+                    position: 'absolute',
+                    top: `${topPx + 12}px`,
+                    left: `${leftPx + 12}px`,
+                    transition: 'all 0.12s ease-out',
+                  }}
+                  className="flex items-start"
+                >
+                  {/* Vertical Caret */}
+                  <div
+                    className="w-[2px] h-[18px] animate-pulse"
+                    style={{ backgroundColor: participant.color }}
+                  />
+
+                  {/* Collaborator Badge Tag */}
+                  <div
+                    className="px-1.5 py-0.5 text-[10px] font-mono font-semibold text-white rounded shadow-md whitespace-nowrap ml-0.5 -mt-3.5 select-none"
+                    style={{ backgroundColor: participant.color }}
+                  >
+                    {participant.name}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
           {/* Interactive Textarea Overlay */}
           <textarea
             ref={textareaRef}
@@ -313,10 +405,21 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           <span>UTF-8</span>
           <span>·</span>
           <span>2 spaces</span>
+          <span>·</span>
+          <span className="uppercase text-slate-400">{file.language}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-slate-600">Gemini Live Active</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          {activeRemoteParticipants.length > 0 ? (
+            <div className="flex items-center gap-1.5 text-emerald-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span className="text-[10px]">Real-Time Sync ({activeRemoteParticipants.length + 1} users)</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <span className="text-slate-600">Local Session</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+            </div>
+          )}
         </div>
       </div>
     </div>
