@@ -14,7 +14,9 @@ import { ProjectStats } from './components/Sidebar/ProjectStats';
 import { CodeEditor } from './components/Editor/CodeEditor';
 import { GeminiCopilot } from './components/Copilot/GeminiCopilot';
 import { LivePreview } from './components/Preview/LivePreview';
-import { IntegratedTerminal } from './components/Terminal/IntegratedTerminal';
+import { IntegratedTerminal, TerminalThemeId } from './components/Terminal/IntegratedTerminal';
+import { TestRunner } from './components/Testing/TestRunner';
+import { CommandPalette } from './components/CommandPalette/CommandPalette';
 import { BrainstormerCanvas } from './components/Brainstormer/BrainstormerCanvas';
 import { GenerateProjectModal } from './components/Modals/GenerateProjectModal';
 import { TemplatesModal } from './components/Modals/TemplatesModal';
@@ -70,6 +72,12 @@ export default function App() {
   const [showTerminal, setShowTerminal] = useState(true);
   const [railCollapsed, setRailCollapsed] = useState(false);
   const [isGitHubHubOpen, setIsGitHubHubOpen] = useState(false);
+  const [gitHubInitialTab, setGitHubInitialTab] = useState<'repos' | 'create' | 'push' | 'clone_url'>('push');
+
+  const handleOpenGitHub = (tab: 'repos' | 'create' | 'push' | 'clone_url' = 'push') => {
+    setGitHubInitialTab(tab);
+    setIsGitHubHubOpen(true);
+  };
 
   // Firebase Auth State
   const [user, setUser] = useState<User | null>(null);
@@ -81,6 +89,24 @@ export default function App() {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [externalCopilotPrompt, setExternalCopilotPrompt] = useState<string>('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Command Palette & Theme States
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [activeTerminalTheme, setActiveTerminalTheme] = useState<TerminalThemeId>(() => {
+    try {
+      const saved = localStorage.getItem('gemini_terminal_theme_preset') as TerminalThemeId;
+      if (saved) return saved;
+    } catch {}
+    return 'vscode-dark-plus';
+  });
+
+  const handleSelectTerminalTheme = (tid: TerminalThemeId) => {
+    setActiveTerminalTheme(tid);
+    try {
+      localStorage.setItem('gemini_terminal_theme_preset', tid);
+    } catch {}
+    showToast(`Switched theme to ${tid}`);
+  };
 
   // Real-time Collaboration States
   const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
@@ -771,17 +797,41 @@ export default function App() {
   // Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Command Palette (Ctrl+Shift+P / Cmd+Shift+P / F1)
+      if (((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'P' || e.key === 'p')) || e.key === 'F1') {
+        e.preventDefault();
+        setIsCommandPaletteOpen(prev => !prev);
+        return;
+      }
+      // Save (Ctrl+S / Cmd+S)
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
         showToast('Sandbox refreshed & state saved');
+        return;
       }
+      // Format Code (Alt+Shift+F)
       if (e.shiftKey && e.altKey && (e.key === 'F' || e.key === 'f')) {
         e.preventDefault();
         handleFormatActiveFile();
+        return;
       }
+      // Toggle Terminal (Ctrl+`)
       if ((e.ctrlKey || e.metaKey) && e.key === '`') {
         e.preventDefault();
         setShowTerminal(prev => !prev);
+        return;
+      }
+      // Toggle Sidebar (Ctrl+B / Cmd+B)
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'B' || e.key === 'b')) {
+        e.preventDefault();
+        setShowSidebar(prev => !prev);
+        return;
+      }
+      // Toggle Gemini Copilot (Ctrl+Shift+G / Cmd+Shift+G)
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'G' || e.key === 'g')) {
+        e.preventDefault();
+        setShowCopilot(prev => !prev);
+        return;
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -794,10 +844,16 @@ export default function App() {
       <GeminiAppRail
         currentMode={viewMode === 'canvas' ? 'brainstorm' : (viewMode as GeminiNavMode)}
         onSelectMode={mode => setViewMode(mode)}
-        onOpenGitHub={() => setIsGitHubHubOpen(true)}
+        onOpenGenerateModal={() => setIsGenerateModalOpen(true)}
+        onOpenTemplatesModal={() => setIsTemplatesModalOpen(true)}
+        onOpenCollab={() => setIsCollabModalOpen(true)}
+        isCollabActive={!!collabSession}
+        collabParticipantsCount={collabParticipants.length}
+        onOpenGitHub={() => handleOpenGitHub('push')}
         onOpenGallery={() => setIsGalleryOpen(true)}
         onUploadHtml={() => setIsGalleryOpen(true)}
         onDownloadHtml={handleDownloadStandaloneHtml}
+        onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         isCollapsed={railCollapsed}
         onToggleCollapse={() => setRailCollapsed(p => !p)}
         user={user}
@@ -833,10 +889,12 @@ export default function App() {
           setShowTerminal={setShowTerminal}
           viewMode={viewMode}
           setViewMode={setViewMode}
-          onOpenGitHub={() => setIsGitHubHubOpen(true)}
+          onOpenGitHub={() => handleOpenGitHub('repos')}
+          onPushToGitHub={() => handleOpenGitHub('push')}
           onOpenCollab={() => setIsCollabModalOpen(true)}
           isCollabActive={!!collabSession}
           collabParticipants={collabParticipants}
+          onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         />
 
         {/* Main Workspace: Mode Conditional Rendering */}
@@ -881,6 +939,20 @@ export default function App() {
                 setViewMode('agent');
               }}
               externalSeedConcept={seedConceptForBrainstormer}
+            />
+          </div>
+        ) : viewMode === 'testing' ? (
+          /* Vitest In-Browser Test Runner */
+          <div className="flex-1 flex overflow-hidden relative bg-[#0d1117]">
+            <TestRunner
+              files={files}
+              activeFileId={activeFileId}
+              onSelectFile={id => {
+                handleSelectFile(id);
+                setViewMode('split');
+              }}
+              onAddFile={handleAddFile}
+              onAskCopilot={handleAskCopilot}
             />
           </div>
         ) : viewMode === 'terminal' ? (
@@ -1001,14 +1073,9 @@ export default function App() {
         ) : (
           /* IDE Full Multi-Pane Mode */
           <div className="flex-1 flex overflow-hidden relative">
-            {/* Left Sidebar (Explorer, Testing, or Stats) */}
+            {/* Left Sidebar (Explorer or Stats) */}
             {showSidebar && (
-              viewMode === 'testing' ? (
-                <TestingTab 
-                  files={files} 
-                  onSelectFile={handleSelectFile} 
-                />
-              ) : viewMode === 'stats' ? (
+              viewMode === 'stats' ? (
                 <ProjectStats 
                   files={files}
                   projectName={projectName}
@@ -1117,7 +1184,7 @@ export default function App() {
 
             {/* Gemini Copilot Panel */}
             {showCopilot && (
-              <div className="w-80 h-full border-l border-[#30363d] bg-[#0d1117] flex flex-col">
+              <div className="w-80 lg:w-96 h-full border-l border-[#30363d] bg-[#0d1117] flex flex-col shrink-0">
                 <GeminiCopilot
                   files={files}
                   activeFile={activeFile}
@@ -1221,6 +1288,7 @@ export default function App() {
       <GitHubHub
         isOpen={isGitHubHubOpen}
         onClose={() => setIsGitHubHubOpen(false)}
+        initialTab={gitHubInitialTab}
         files={files}
         projectName={projectName}
         onImportFiles={(imported, newName) => {
@@ -1277,6 +1345,38 @@ export default function App() {
         onStartSession={handleStartCollabSession}
         onJoinSession={handleJoinCollabSession}
         onLeaveSession={handleLeaveCollabSession}
+      />
+
+      {/* VS Code Interactive Command Palette (Ctrl+Shift+P / ⌘⇧P) */}
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        files={files}
+        activeFileId={activeFileId}
+        onSelectFile={handleSelectFile}
+        onFormatCode={handleFormatActiveFile}
+        onSaveFile={() => showToast('File saved & preview refreshed')}
+        onToggleSidebar={() => setShowSidebar(prev => !prev)}
+        onToggleTerminal={() => setShowTerminal(prev => !prev)}
+        onSetViewMode={mode => setViewMode(mode)}
+        onOpenTestRunner={() => setViewMode('testing')}
+        onRunAllTests={() => setViewMode('testing')}
+        onNewFile={() => {
+          const newName = `module_${files.length + 1}.ts`;
+          handleAddFile(newName, 'typescript', '// New TypeScript module\nexport function calculate() {\n  return 42;\n}\n');
+          showToast(`Created ${newName}`);
+        }}
+        onDownloadHtml={handleDownloadStandaloneHtml}
+        onUploadHtml={() => setIsGalleryOpen(true)}
+        onOpenTemplates={() => setIsTemplatesModalOpen(true)}
+        onOpenGallery={() => setIsGalleryOpen(true)}
+        onOpenCollab={() => setIsCollabModalOpen(true)}
+        onOpenGitHub={() => handleOpenGitHub('repos')}
+        onPushToGitHub={() => handleOpenGitHub('push')}
+        onAskCopilot={handleAskCopilot}
+        onToggleCopilot={() => setShowCopilot(prev => !prev)}
+        currentThemeId={activeTerminalTheme}
+        onSelectTheme={handleSelectTerminalTheme}
       />
     </div>
   );

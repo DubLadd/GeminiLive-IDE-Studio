@@ -22,6 +22,9 @@ const ai = new GoogleGenAI({
 });
 
 const CANDIDATE_MODELS = [
+  'gemini-2.5-flash',
+  'gemini-2.5-pro',
+  'gemini-2.5-flash-lite',
   'gemini-flash-latest',
   'gemini-3.1-flash-lite',
   'gemini-3.8-flash',
@@ -606,7 +609,19 @@ async function startServer() {
   // Streaming AI Chat / Pair Programming Endpoint via SSE
   app.post('/api/chat/stream', async (req, res) => {
     try {
-      const { messages, projectFiles, activeFile, selectedCode, isBrainstormer, brainstormMode } = req.body;
+      const {
+        messages,
+        projectFiles,
+        activeFile,
+        selectedCode,
+        isBrainstormer,
+        brainstormMode,
+        model: userRequestedModel,
+        temperature: userTemperature,
+        maxTokens: userMaxTokens,
+        systemInstruction: userCustomInstruction,
+        thinkingBudget: userThinkingBudget,
+      } = req.body;
 
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
@@ -757,15 +772,37 @@ When providing or editing files, always provide complete code in markdown blocks
       let streamedChunks = 0;
       let streamSucceeded = false;
 
-      for (const model of CANDIDATE_MODELS) {
+      const modelsToTry = userRequestedModel
+        ? [userRequestedModel, ...CANDIDATE_MODELS.filter(m => m !== userRequestedModel)]
+        : CANDIDATE_MODELS;
+
+      const effectiveSystemInstruction = userCustomInstruction
+        ? `${systemInstruction}\n\n## Custom User Directives & Persona:\n${userCustomInstruction}`
+        : systemInstruction;
+
+      const effectiveTemperature = typeof userTemperature === 'number'
+        ? Math.min(1.0, Math.max(0.0, userTemperature))
+        : (isBrainstormer ? 0.9 : 0.7);
+
+      for (const model of modelsToTry) {
         try {
+          const streamConfig: any = {
+            systemInstruction: effectiveSystemInstruction,
+            temperature: effectiveTemperature,
+          };
+
+          if (typeof userMaxTokens === 'number' && userMaxTokens > 0) {
+            streamConfig.maxOutputTokens = userMaxTokens;
+          }
+
+          if (typeof userThinkingBudget === 'number' && userThinkingBudget > 0) {
+            streamConfig.thinkingConfig = { thinkingBudget: userThinkingBudget };
+          }
+
           const responseStream = await ai.models.generateContentStream({
             model,
             contents: formattedContents,
-            config: {
-              systemInstruction,
-              temperature: isBrainstormer ? 0.9 : 0.7,
-            },
+            config: streamConfig,
           });
 
           for await (const chunk of responseStream) {

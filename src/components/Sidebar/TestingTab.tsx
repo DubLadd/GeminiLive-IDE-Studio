@@ -1,280 +1,307 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ProjectFile } from '../../types/ide';
 import {
+  findTestFiles,
+  runAllTests,
+  executeTestFile,
+  generateSampleTestCode,
+  TestFileResult,
+  TestRunSummary
+} from '../../utils/vitestEngine';
+import {
   Play,
+  RotateCcw,
   CheckCircle2,
   XCircle,
-  AlertCircle,
-  RotateCcw,
-  Sparkles,
+  Clock,
   FileCode,
-  Check,
+  Sparkles,
+  Plus,
+  Maximize2,
   Search,
-  Filter
+  Zap,
+  ChevronDown,
+  ChevronRight,
+  AlertTriangle
 } from 'lucide-react';
 
 interface TestingTabProps {
   files: ProjectFile[];
   onSelectFile: (fileId: string) => void;
+  onOpenFullRunner?: () => void;
+  onAddFile?: (name: string, language: ProjectFile['language'], content?: string) => void;
 }
 
-interface TestCase {
-  id: string;
-  fileId: string;
-  fileName: string;
-  name: string;
-  type: 'unit' | 'syntax' | 'integration' | 'security';
-  status: 'passed' | 'failed' | 'running' | 'idle';
-  duration?: number;
-  message?: string;
-}
-
-export const TestingTab: React.FC<TestingTabProps> = ({ files, onSelectFile }) => {
-  const [isRunningAll, setIsRunningAll] = useState(false);
-  const [filterStatus, setFilterStatus] = useState<'all' | 'passed' | 'failed'>('all');
+export const TestingTab: React.FC<TestingTabProps> = ({
+  files,
+  onSelectFile,
+  onOpenFullRunner,
+  onAddFile,
+}) => {
+  const [isRunning, setIsRunning] = useState(false);
+  const [summary, setSummary] = useState<TestRunSummary | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'passed' | 'failed'>('all');
+  const [expandedFiles, setExpandedFiles] = useState<Record<string, boolean>>({});
 
-  // Generate dynamic test suites from files
-  const initialTests = useMemo<TestCase[]>(() => {
-    const list: TestCase[] = [];
+  const testFiles = useMemo(() => findTestFiles(files), [files]);
 
-    files.forEach((f, idx) => {
-      // Syntax & Structure Test
-      list.push({
-        id: `syntax-${f.id}`,
-        fileId: f.id,
-        fileName: f.name,
-        name: `Validate syntax & encoding for ${f.name}`,
-        type: 'syntax',
-        status: 'passed',
-        duration: 12 + (idx * 3),
-        message: 'No unclosed tokens or syntax anomalies detected.'
+  const handleRunAll = async () => {
+    if (isRunning) return;
+    setIsRunning(true);
+    try {
+      const res = await runAllTests(files);
+      setSummary(res);
+      const expandMap: Record<string, boolean> = {};
+      res.fileResults.forEach(f => {
+        expandMap[f.fileId] = true;
       });
-
-      // Unit logic test for scripts/html
-      if (f.name.endsWith('.js') || f.name.endsWith('.ts') || f.name.endsWith('.jsx') || f.name.endsWith('.tsx')) {
-        list.push({
-          id: `unit-${f.id}`,
-          fileId: f.id,
-          fileName: f.name,
-          name: `Execute pure functions & unit exports (${f.name})`,
-          type: 'unit',
-          status: 'passed',
-          duration: 35 + (idx * 5),
-          message: 'All asserted return values matched snapshot.'
-        });
-      }
-
-      if (f.name.endsWith('.html')) {
-        list.push({
-          id: `dom-${f.id}`,
-          fileId: f.id,
-          fileName: f.name,
-          name: `DOM integrity & root node presence (${f.name})`,
-          type: 'integration',
-          status: f.content.includes('<div') || f.content.includes('<canvas') ? 'passed' : 'failed',
-          duration: 18,
-          message: f.content.includes('<div') || f.content.includes('<canvas')
-            ? 'Root container properly mounted.'
-            : 'Warning: Missing standard container elements.'
-        });
-      }
-
-      if (f.name.endsWith('.json')) {
-        let validJson = true;
-        try {
-          JSON.parse(f.content);
-        } catch {
-          validJson = false;
-        }
-        list.push({
-          id: `json-${f.id}`,
-          fileId: f.id,
-          fileName: f.name,
-          name: `JSON schema parser check (${f.name})`,
-          type: 'unit',
-          status: validJson ? 'passed' : 'failed',
-          duration: 8,
-          message: validJson ? 'Well-formed JSON structure.' : 'Syntax error parsing JSON payload.'
-        });
-      }
-    });
-
-    return list;
-  }, [files]);
-
-  const [tests, setTests] = useState<TestCase[]>(initialTests);
-
-  const runAllTests = () => {
-    setIsRunningAll(true);
-    setTests(prev => prev.map(t => ({ ...t, status: 'running' })));
-
-    setTimeout(() => {
-      setTests(prev =>
-        prev.map(t => {
-          const file = files.find(f => f.id === t.fileId);
-          let passed = true;
-          let msg = 'Assertion passed cleanly.';
-
-          if (t.type === 'syntax' && file) {
-            passed = file.content.length > 0;
-            msg = passed ? 'Tokens parsed without errors.' : 'File is empty.';
-          } else if (file?.name.endsWith('.json')) {
-            try {
-              JSON.parse(file.content);
-              passed = true;
-              msg = 'JSON valid.';
-            } catch {
-              passed = false;
-              msg = 'Malformed JSON.';
-            }
-          }
-
-          return {
-            ...t,
-            status: passed ? 'passed' : 'failed',
-            duration: Math.floor(Math.random() * 40) + 10,
-            message: msg
-          };
-        })
-      );
-      setIsRunningAll(false);
-    }, 600);
+      setExpandedFiles(expandMap);
+    } finally {
+      setIsRunning(false);
+    }
   };
 
-  const filteredTests = tests.filter(t => {
-    if (filterStatus === 'passed' && t.status !== 'passed') return false;
-    if (filterStatus === 'failed' && t.status !== 'failed') return false;
-    if (searchQuery && !t.name.toLowerCase().includes(searchQuery.toLowerCase()) && !t.fileName.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
+  // Run on mount if test files exist
+  useEffect(() => {
+    if (testFiles.length > 0 && !summary) {
+      handleRunAll();
     }
-    return true;
-  });
+  }, [testFiles.length]);
 
-  const passedCount = tests.filter(t => t.status === 'passed').length;
-  const failedCount = tests.filter(t => t.status === 'failed').length;
+  const toggleExpand = (id: string) => {
+    setExpandedFiles(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleAddSampleTest = () => {
+    if (onAddFile) {
+      onAddFile('math.test.ts', 'typescript', generateSampleTestCode('math'));
+    }
+  };
 
   return (
-    <div className="w-64 bg-[#161b22] border-r border-[#30363d] flex flex-col h-full select-none text-slate-300">
-      {/* Header */}
-      <div className="p-3 border-b border-[#30363d] flex items-center justify-between">
+    <div className="w-80 h-full bg-[#111622] border-r border-[#262c36] flex flex-col text-slate-100 select-none shrink-0 font-sans">
+      {/* Top Header */}
+      <div className="p-3 border-b border-[#262c36] bg-[#161c28] flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-emerald-400" />
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-200">Test Runner</span>
-        </div>
-        <button
-          onClick={runAllTests}
-          disabled={isRunningAll}
-          className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 rounded transition-all disabled:opacity-50"
-          title="Run All Workspace Tests"
-        >
-          {isRunningAll ? (
-            <RotateCcw className="w-3.5 h-3.5 animate-spin" />
-          ) : (
-            <Play className="w-3.5 h-3.5 fill-current" />
-          )}
-          <span>{isRunningAll ? 'Running...' : 'Run All'}</span>
-        </button>
-      </div>
-
-      {/* Summary Scoreboard */}
-      <div className="px-3 py-2 border-b border-[#30363d] bg-black/20 flex items-center justify-between text-xs">
-        <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1 text-emerald-400 font-medium">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            {passedCount} Passed
-          </span>
-          {failedCount > 0 && (
-            <span className="flex items-center gap-1 text-rose-400 font-medium">
-              <XCircle className="w-3.5 h-3.5" />
-              {failedCount} Failed
+          <div className="w-6 h-6 rounded bg-gradient-to-tr from-amber-500 to-emerald-500 flex items-center justify-center shadow-xs">
+            <Zap className="w-3.5 h-3.5 text-white fill-white" />
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5 font-bold text-xs text-white">
+              <span>VITEST</span>
+              <span className="text-[9px] font-mono bg-emerald-500/20 text-emerald-300 px-1 rounded border border-emerald-500/30">
+                v2.1
+              </span>
+            </div>
+            <span className="text-[10px] text-slate-400 font-mono">
+              {testFiles.length} file{testFiles.length !== 1 ? 's' : ''} detected
             </span>
-          )}
+          </div>
         </div>
-        <span className="text-[11px] text-slate-400">{tests.length} tests</span>
+
+        <div className="flex items-center gap-1">
+          {onOpenFullRunner && (
+            <button
+              onClick={onOpenFullRunner}
+              className="p-1 text-slate-400 hover:text-white hover:bg-[#21262d] rounded transition-colors"
+              title="Expand into full Test Runner panel"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
+            </button>
+          )}
+
+          <button
+            onClick={handleRunAll}
+            disabled={isRunning || testFiles.length === 0}
+            className="flex items-center gap-1 px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded text-xs font-semibold transition-colors shadow-xs"
+          >
+            {isRunning ? (
+              <RotateCcw className="w-3 h-3 animate-spin" />
+            ) : (
+              <Play className="w-3 h-3 fill-white" />
+            )}
+            <span>Run All</span>
+          </button>
+        </div>
       </div>
 
-      {/* Search & Filter */}
-      <div className="p-2 border-b border-[#30363d] flex flex-col gap-1.5">
-        <div className="relative">
-          <Search className="w-3 h-3 text-slate-500 absolute left-2 top-2" />
+      {/* Quick Metrics Bar */}
+      {summary && (
+        <div className="px-3 py-2 bg-[#0d1117] border-b border-[#262c36] flex items-center justify-between text-[11px] font-mono">
+          <div className="flex items-center gap-2">
+            <span className="text-emerald-400 font-semibold">✓ {summary.passedTests} passed</span>
+            {summary.failedTests > 0 && (
+              <span className="text-rose-400 font-semibold">✕ {summary.failedTests} failed</span>
+            )}
+          </div>
+          <span className="text-slate-500 flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            {summary.duration}ms
+          </span>
+        </div>
+      )}
+
+      {/* Filter and Search */}
+      <div className="p-2 border-b border-[#262c36] space-y-1.5">
+        <div className="flex items-center gap-1 bg-[#0d1117] border border-[#30363d] rounded px-2 py-1 focus-within:border-emerald-500">
+          <Search className="w-3 h-3 text-slate-500 shrink-0" />
           <input
             type="text"
-            placeholder="Search test cases..."
+            placeholder="Search test names..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full bg-[#0d1117] border border-[#30363d] rounded pl-7 pr-2 py-1 text-[11px] text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+            className="bg-transparent border-none outline-none text-slate-200 text-xs w-full font-sans"
           />
         </div>
-        <div className="flex items-center gap-1 text-[10px]">
+
+        <div className="flex items-center justify-between text-[10px] text-slate-400">
           <button
             onClick={() => setFilterStatus('all')}
-            className={`px-2 py-0.5 rounded transition-colors ${filterStatus === 'all' ? 'bg-[#21262d] text-white font-semibold' : 'text-slate-400 hover:text-slate-200'}`}
+            className={`px-1.5 py-0.5 rounded transition-colors ${filterStatus === 'all' ? 'bg-[#21262d] text-white font-medium' : 'hover:text-slate-200'}`}
           >
-            All ({tests.length})
+            All
           </button>
           <button
             onClick={() => setFilterStatus('passed')}
-            className={`px-2 py-0.5 rounded transition-colors ${filterStatus === 'passed' ? 'bg-emerald-500/20 text-emerald-300 font-semibold' : 'text-slate-400 hover:text-slate-200'}`}
+            className={`px-1.5 py-0.5 rounded transition-colors ${filterStatus === 'passed' ? 'bg-emerald-500/20 text-emerald-300 font-medium' : 'hover:text-emerald-300'}`}
           >
-            Passed ({passedCount})
+            Passed
           </button>
-          {failedCount > 0 && (
-            <button
-              onClick={() => setFilterStatus('failed')}
-              className={`px-2 py-0.5 rounded transition-colors ${filterStatus === 'failed' ? 'bg-rose-500/20 text-rose-300 font-semibold' : 'text-slate-400 hover:text-slate-200'}`}
-            >
-              Failed ({failedCount})
-            </button>
-          )}
+          <button
+            onClick={() => setFilterStatus('failed')}
+            className={`px-1.5 py-0.5 rounded transition-colors ${filterStatus === 'failed' ? 'bg-rose-500/20 text-rose-300 font-medium' : 'hover:text-rose-300'}`}
+          >
+            Failed
+          </button>
         </div>
       </div>
 
-      {/* Test List */}
-      <div className="flex-1 overflow-y-auto p-2 space-y-1.5 no-scrollbar">
-        {filteredTests.length === 0 ? (
-          <div className="p-4 text-center text-xs text-slate-500">
-            No matching test suites found.
+      {/* Test Suites Tree List */}
+      <div className="flex-1 overflow-y-auto p-2 space-y-2">
+        {testFiles.length === 0 ? (
+          <div className="p-6 text-center text-slate-400 space-y-3">
+            <p className="text-xs">No unit test files found in workspace.</p>
+            {onAddFile && (
+              <button
+                onClick={handleAddSampleTest}
+                className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-medium transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Sample Test File</span>
+              </button>
+            )}
           </div>
         ) : (
-          filteredTests.map(test => (
-            <div
-              key={test.id}
-              onClick={() => onSelectFile(test.fileId)}
-              className="p-2 rounded bg-[#0d1117]/60 hover:bg-[#21262d]/60 border border-[#30363d]/60 hover:border-slate-600 transition-all cursor-pointer group text-xs flex flex-col gap-1"
-            >
-              <div className="flex items-start justify-between gap-1.5">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  {test.status === 'running' ? (
-                    <RotateCcw className="w-3.5 h-3.5 text-sky-400 animate-spin shrink-0" />
-                  ) : test.status === 'passed' ? (
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  ) : (
-                    <XCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                  )}
-                  <span className="font-medium text-slate-200 truncate group-hover:text-white">
-                    {test.name}
-                  </span>
+          testFiles.map(file => {
+            const fileRes = summary?.fileResults.find(r => r.fileId === file.id);
+            const isExpanded = expandedFiles[file.id] ?? true;
+            const hasFailed = fileRes && fileRes.failed > 0;
+            const isPassed = fileRes && fileRes.failed === 0 && fileRes.passed > 0;
+
+            return (
+              <div
+                key={file.id}
+                className="bg-[#161c28] border border-[#262c36] rounded-lg overflow-hidden text-xs"
+              >
+                {/* File Row */}
+                <div
+                  onClick={() => toggleExpand(file.id)}
+                  className="flex items-center justify-between px-2.5 py-2 cursor-pointer hover:bg-[#1a2232] transition-colors"
+                >
+                  <div className="flex items-center gap-1.5 truncate">
+                    {isExpanded ? (
+                      <ChevronDown className="w-3 h-3 text-slate-400 shrink-0" />
+                    ) : (
+                      <ChevronRight className="w-3 h-3 text-slate-400 shrink-0" />
+                    )}
+                    {hasFailed ? (
+                      <XCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                    ) : isPassed ? (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    ) : (
+                      <FileCode className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    )}
+                    <span className="font-mono font-medium truncate text-slate-200">
+                      {file.name}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 text-[10px] font-mono shrink-0">
+                    {fileRes && <span className="text-slate-500">{fileRes.duration}ms</span>}
+                    <button
+                      onClick={e => {
+                        e.stopPropagation();
+                        onSelectFile(file.id);
+                      }}
+                      className="text-slate-400 hover:text-sky-300"
+                      title="Open in editor"
+                    >
+                      Edit
+                    </button>
+                  </div>
                 </div>
-                {test.duration && (
-                  <span className="text-[10px] text-slate-400 font-mono shrink-0">
-                    {test.duration}ms
-                  </span>
+
+                {/* Suites & Tests inside File */}
+                {isExpanded && fileRes && (
+                  <div className="px-2 pb-2 space-y-1.5 pt-1 border-t border-[#262c36]/60">
+                    {fileRes.suites.map(suite => (
+                      <div key={suite.name} className="space-y-1">
+                        <div className="text-[11px] font-semibold text-slate-400 px-1 flex items-center justify-between">
+                          <span>{suite.name}</span>
+                          <span className="font-mono text-[9px] text-slate-500">
+                            {suite.passed}/{suite.tests.length}
+                          </span>
+                        </div>
+
+                        <div className="space-y-1 pl-1">
+                          {suite.tests
+                            .filter(t => {
+                              if (filterStatus === 'passed' && t.status !== 'passed') return false;
+                              if (filterStatus === 'failed' && t.status !== 'failed') return false;
+                              if (searchQuery && !t.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+                              return true;
+                            })
+                            .map(t => (
+                              <div
+                                key={t.id}
+                                className="flex flex-col p-1.5 bg-[#0d1117] rounded border border-[#21262d] text-[11px]"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-1.5 min-w-0">
+                                    {t.status === 'passed' ? (
+                                      <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                                    ) : (
+                                      <XCircle className="w-3 h-3 text-rose-400 shrink-0" />
+                                    )}
+                                    <span
+                                      className={`truncate ${
+                                        t.status === 'passed' ? 'text-slate-300' : 'text-rose-300 font-semibold'
+                                      }`}
+                                    >
+                                      {t.name}
+                                    </span>
+                                  </div>
+                                  <span className="text-[9px] font-mono text-slate-500 shrink-0">
+                                    {t.duration}ms
+                                  </span>
+                                </div>
+
+                                {t.error && (
+                                  <div className="mt-1 p-1.5 bg-rose-950/30 border border-rose-500/30 rounded text-[10px] font-mono text-rose-300 whitespace-pre-wrap">
+                                    {t.error}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
-              <div className="flex items-center justify-between text-[10px] text-slate-400 pl-5">
-                <span className="truncate">{test.fileName}</span>
-                <span className="uppercase text-[9px] px-1 py-0.2 bg-black/30 rounded border border-white/5">
-                  {test.type}
-                </span>
-              </div>
-              {test.message && (
-                <div className="text-[10px] text-slate-400 pl-5 truncate">
-                  {test.message}
-                </div>
-              )}
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

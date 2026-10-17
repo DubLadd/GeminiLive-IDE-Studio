@@ -144,6 +144,11 @@ function getLanguageFromFilename(filename: string): ProjectFile['language'] {
     case 'sh':
     case 'bash':
       return 'shell';
+    case 'sql':
+      return 'sql';
+    case 'yaml':
+    case 'yml':
+      return 'yaml';
     default:
       return 'plaintext';
   }
@@ -156,7 +161,6 @@ export async function fetchRepoTreeFiles(
   repo: string,
   branch = 'main'
 ): Promise<ProjectFile[]> {
-  // Try specified branch, fallback to 'master' if branch fails
   let treeSha = branch;
   try {
     const branchRes = await githubFetch(`/repos/${owner}/${repo}/branches/${branch}`, token);
@@ -180,12 +184,12 @@ export async function fetchRepoTreeFiles(
     throw new Error('No files found in repository tree.');
   }
 
-  // Filter for readable text files (limit size to max 20 files, each < 500KB to prevent browser lockup)
-  const codeExtensions = ['.html', '.css', '.js', '.jsx', '.ts', '.tsx', '.json', '.md', '.py', '.txt', '.sh'];
+  // Filter for readable text files (limit size to max 25 files, each < 500KB to prevent browser lockup)
+  const codeExtensions = ['.html', '.css', '.js', '.jsx', '.ts', '.tsx', '.json', '.md', '.py', '.txt', '.sh', '.sql', '.yaml', '.yml'];
   const relevantNodes = treeData.tree
     .filter((node: any) => node.type === 'blob')
     .filter((node: any) => codeExtensions.some(ext => node.path.toLowerCase().endsWith(ext)))
-    .slice(0, 25);
+    .slice(0, 30);
 
   const importedFiles: ProjectFile[] = [];
 
@@ -248,7 +252,10 @@ export async function createGitHubRepository(
   return await res.json();
 }
 
-// Commit & Push Project Files to a Repository
+/**
+ * Commit & Push Project Files to a GitHub Repository via GitHub REST / Git Data API.
+ * Supports existing repositories, branch updates, and brand-new empty repositories.
+ */
 export async function pushProjectToGitHub(
   token: string,
   owner: string,
@@ -256,36 +263,62 @@ export async function pushProjectToGitHub(
   files: ProjectFile[],
   commitMessage: string,
   branch = 'main'
-): Promise<{ success: boolean; commitUrl?: string }> {
-  // Step 1: Get the current commit SHA of the branch
-  let branchRef = branch;
-  let latestCommitSha = '';
-
-  try {
-    const refRes = await githubFetch(`/repos/${owner}/${repo}/git/ref/heads/${branchRef}`, token);
-    const refData = await refRes.json();
-    latestCommitSha = refData.object.sha;
-  } catch {
-    // If heads/main does not exist, check default branch
-    const repoRes = await githubFetch(`/repos/${owner}/${repo}`, token);
-    const repoData = await repoRes.json();
-    branchRef = repoData.default_branch || 'main';
-    const refRes = await githubFetch(`/repos/${owner}/${repo}/git/ref/heads/${branchRef}`, token);
-    const refData = await refRes.json();
-    latestCommitSha = refData.object.sha;
+): Promise<{ success: boolean; commitUrl?: string; sha?: string }> {
+  if (!token || !token.trim()) {
+    throw new Error('A valid GitHub Personal Access Token (PAT) with "repo" scope is required.');
+  }
+  if (!owner || !repo) {
+    throw new Error('Target repository owner and name must be specified (e.g. "username/repository").');
+  }
+  if (!files || files.length === 0) {
+    throw new Error('No files found in workspace to commit.');
   }
 
-  // Step 2: Get base tree
-  const commitRes = await githubFetch(`/repos/${owner}/${repo}/git/commits/${latestCommitSha}`, token);
-  const commitData = await commitRes.json();
-  const baseTreeSha = commitData.tree.sha;
+  // Clean owner and repo names
+  const cleanOwner = owner.trim();
+  const cleanRepo = repo.trim();
+  let branchRef = (branch || 'main').trim();
+  let latestCommitSha = '';
+  let isNewBranchOrEmpty = false;
 
-  // Step 3: Create Blobs & Tree Items for files
+  // Step 1: Try to locate latest commit SHA for the branch
+  try {
+    const refRes = await githubFetch(`/repos/${cleanOwner}/${cleanRepo}/git/ref/heads/${branchRef}`, token);
+    const refData = await refRes.json();
+    latestCommitSha = refData.object.sha;
+  } catch (refErr: any) {
+    // If heads/${branchRef} does not exist, check repo default branch
+    try {
+      const repoRes = await githubFetch(`/repos/${cleanOwner}/${cleanRepo}`, token);
+      const repoData = await repoRes.json();
+      const defaultBranch = repoData.default_branch || 'main';
+      const refRes = await githubFetch(`/repos/${cleanOwner}/${cleanRepo}/git/ref/heads/${defaultBranch}`, token);
+      const refData = await refRes.json();
+      latestCommitSha = refData.object.sha;
+      branchRef = defaultBranch;
+    } catch {
+      // Repository might be brand new with zero commits
+      isNewBranchOrEmpty = true;
+    }
+  }
+
+  // Step 2: Get base tree if existing commit exists
+  let baseTreeSha: string | undefined = undefined;
+  if (latestCommitSha) {
+    try {
+      const commitRes = await githubFetch(`/repos/${cleanOwner}/${cleanRepo}/git/commits/${latestCommitSha}`, token);
+      const commitData = await commitRes.json();
+      baseTreeSha = commitData.tree.sha;
+    } catch (commitErr) {
+      console.warn('Could not retrieve base tree sha:', commitErr);
+    }
+  }
+
+  // Step 3: Create Git Blobs for all project files
   const treeItems = [];
 
   for (const file of files) {
-    // Create blob with utf-8 encoding
-    const blobRes = await githubFetch(`/repos/${owner}/${repo}/git/blobs`, token, {
+    const blobRes = await githubFetch(`/repos/${cleanOwner}/${cleanRepo}/git/blobs`, token, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -303,41 +336,62 @@ export async function pushProjectToGitHub(
     });
   }
 
-  // Step 4: Create new tree
-  const newTreeRes = await githubFetch(`/repos/${owner}/${repo}/git/trees`, token, {
+  // Step 4: Create new Git Tree
+  const treePayload: any = { tree: treeItems };
+  if (baseTreeSha) {
+    treePayload.base_tree = baseTreeSha;
+  }
+
+  const newTreeRes = await githubFetch(`/repos/${cleanOwner}/${cleanRepo}/git/trees`, token, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      base_tree: baseTreeSha,
-      tree: treeItems,
-    }),
+    body: JSON.stringify(treePayload),
   });
   const newTreeData = await newTreeRes.json();
 
-  // Step 5: Create new commit
-  const newCommitRes = await githubFetch(`/repos/${owner}/${repo}/git/commits`, token, {
+  // Step 5: Create new Git Commit
+  const message =
+    commitMessage.trim() ||
+    `Update ${files.length} workspace files via Gemini Live IDE [${new Date().toISOString()}]`;
+
+  const commitPayload: any = {
+    message,
+    tree: newTreeData.sha,
+    parents: latestCommitSha ? [latestCommitSha] : [],
+  };
+
+  const newCommitRes = await githubFetch(`/repos/${cleanOwner}/${cleanRepo}/git/commits`, token, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      message: commitMessage || `Update workspace files via Gemini Live IDE [${new Date().toISOString()}]`,
-      tree: newTreeData.sha,
-      parents: [latestCommitSha],
-    }),
+    body: JSON.stringify(commitPayload),
   });
   const newCommitData = await newCommitRes.json();
 
-  // Step 6: Update branch ref
-  await githubFetch(`/repos/${owner}/${repo}/git/refs/heads/${branchRef}`, token, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      sha: newCommitData.sha,
-      force: false,
-    }),
-  });
+  // Step 6: Update branch ref or create it if missing
+  if (latestCommitSha && !isNewBranchOrEmpty) {
+    await githubFetch(`/repos/${cleanOwner}/${cleanRepo}/git/refs/heads/${branchRef}`, token, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sha: newCommitData.sha,
+        force: false,
+      }),
+    });
+  } else {
+    // Create new ref
+    await githubFetch(`/repos/${cleanOwner}/${cleanRepo}/git/refs`, token, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ref: `refs/heads/${branchRef}`,
+        sha: newCommitData.sha,
+      }),
+    });
+  }
 
   return {
     success: true,
-    commitUrl: `https://github.com/${owner}/${repo}/commit/${newCommitData.sha}`,
+    sha: newCommitData.sha,
+    commitUrl: `https://github.com/${cleanOwner}/${cleanRepo}/commit/${newCommitData.sha}`,
   };
 }

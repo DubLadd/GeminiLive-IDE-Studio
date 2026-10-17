@@ -68,5 +68,10 @@ service cloud.firestore {
         allow write: if isSignedIn();
       }
     }
+
+    // Gemini Copilot Sessions
+    match /copilot_sessions/{sessionId} {
+      allow read, write: if isSignedIn();
+    }
   }
 }

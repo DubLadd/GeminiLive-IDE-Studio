@@ -2369,6 +2369,71 @@ window.addEventListener('DOMContentLoaded', () => {
   console.log('AetherVector Orbital Simulation initialized successfully.');
 });
 `
+    },
+    {
+      id: '4',
+      name: 'orbital.test.ts',
+      language: 'typescript',
+      content: `import { describe, it, expect, vi } from 'vitest';
+
+describe('AetherVector Keplerian Orbital Physics', () => {
+  it('calculates Earth orbital speed around the Sun', () => {
+    const G = 6.6743e-11;
+    const M_sun = 1.989e30;
+    const r_earth = 1.496e11; // 1 AU in meters
+    const v = Math.sqrt((G * M_sun) / r_earth);
+    expect(Math.round(v / 1000)).toBe(30); // ~30 km/s
+  });
+
+  it('validates semi-major axis order of terrestrial planets', () => {
+    const semiMajorAxes = {
+      mercury: 0.387,
+      venus: 0.723,
+      earth: 1.000,
+      mars: 1.524,
+    };
+    expect(semiMajorAxes.earth).toBe(1.0);
+    expect(semiMajorAxes.mars).toBeGreaterThan(semiMajorAxes.earth);
+    expect(semiMajorAxes.mercury).toBeLessThan(semiMajorAxes.venus);
+  });
+
+  it('computes patched-conic Hohmann transfer semi-major axis', () => {
+    const r1 = 1.0; // Earth AU
+    const r2 = 1.524; // Mars AU
+    const a_transfer = (r1 + r2) / 2;
+    expect(a_transfer).toBeCloseTo(1.262, 2);
+    expect(a_transfer).toBeGreaterThan(r1);
+    expect(a_transfer).toBeLessThan(r2);
+  });
+
+  it('safely asserts eccentricity boundaries (0 <= e < 1 for elliptical)', () => {
+    const validateEccentricity = (e: number) => {
+      if (e < 0 || e >= 1) throw new Error('Unbound hyperbolic trajectory');
+      return true;
+    };
+    expect(validateEccentricity(0.0167)).toBe(true); // Earth
+    expect(validateEccentricity(0.0934)).toBe(true); // Mars
+    expect(() => validateEccentricity(1.2)).toThrow('Unbound hyperbolic trajectory');
+  });
+});
+
+describe('Simulation Clock & Telemetry Engine', () => {
+  it('advances Julian Date clock monotonically with time warp', () => {
+    const baseJd = 2460400.5;
+    const daysStep = 10;
+    const newJd = baseJd + daysStep;
+    expect(newJd).toBe(2460410.5);
+    expect(newJd).toBeGreaterThan(baseJd);
+  });
+
+  it('executes telemetry callback spy with nominal payload', () => {
+    const telemetryHandler = vi.fn();
+    telemetryHandler('SOL_TELEMETRY', { irradiance: 1361, solarWind: 428 });
+    expect(telemetryHandler).toHaveBeenCalledTimes(1);
+    expect(telemetryHandler).toHaveBeenCalledWith('SOL_TELEMETRY', { irradiance: 1361, solarWind: 428 });
+  });
+});
+`
     }
   ]
 };
